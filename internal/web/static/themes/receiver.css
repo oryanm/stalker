@@ -478,8 +478,18 @@ button:disabled {
   transform: translateY(11px);
 }
 
+/* :active also matches the key's list item, so the lamp drops with the cap as it is pressed */
+.tag:active::before,
 .tag.active::before {
   transform: translateY(11px);
+}
+
+/* the latched key is lit from inside the housing */
+.tag.active a {
+  --k-top: oklch(from var(--editor-bg) calc(l + 0.13) calc(c + 0.035) h);
+  --k-mid: oklch(from var(--editor-bg) calc(l + 0.1) calc(c + 0.03) h);
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.05), inset -1px 0 0 rgba(0, 0, 0, 0.3),
+    inset 0 0 14px 1px oklch(from var(--lit) l c h / 0.32), inset 0 1px 0 oklch(from var(--lit-hi) l c h / 0.45);
 }
 
 .tag a .face {
@@ -487,7 +497,7 @@ button:disabled {
 }
 
 .tag.active a .face {
-  filter: none;
+  filter: drop-shadow(0 0 6px oklch(from var(--lit) l c h / 0.55));
 }
 
 .actions {
@@ -1020,7 +1030,7 @@ button:disabled {
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* the expand toggle: a round cap that latches down, lights, and turns a quarter */
+/* the expand toggle: a square key that latches down, lights, and turns a quarter */
 .toggle {
   order: -2;
   display: inline-grid;
@@ -1028,8 +1038,8 @@ button:disabled {
   flex: none;
   width: 1.75rem;
   height: 1.75rem;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 30%, var(--cap-hover-top), var(--cap-top) 60%, var(--cap-bottom));
+  border-radius: 3px;
+  background: linear-gradient(var(--cap-top), var(--cap-bottom));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 1px var(--cap-edge), 0 2px 0 1px var(--cap-side),
     0 3px 0 1px var(--cap-deep), 0 5px 6px rgba(0, 0, 0, 0.45);
   color: var(--ink-soft);
@@ -1041,6 +1051,7 @@ button:disabled {
 }
 
 .toggle:hover {
+  background: linear-gradient(var(--cap-hover-top), var(--cap-hover-bottom));
   color: var(--readout);
 }
 
@@ -1051,7 +1062,7 @@ button:disabled {
 
 .toggle[aria-expanded="true"] {
   transform: translateY(2px);
-  background: radial-gradient(circle at 50% 40%, var(--lit-hi), var(--lit) 60%, var(--lit-lo));
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, var(--lit-hi), var(--lit) 65%, var(--lit-lo));
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--lit-side), 0 1px 0 1px var(--cap-deep),
     0 0 12px 2px oklch(from var(--lit) l c h / 0.35);
   color: var(--on-lit);
