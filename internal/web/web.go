@@ -25,6 +25,8 @@ type Fetcher interface {
 	FetchNow(ctx context.Context, id int64) error
 	Kick()
 	IsFetching(id int64) bool
+	MinInterval(ctx context.Context) time.Duration
+	SetMinInterval(ctx context.Context, d time.Duration) error
 }
 
 // Discoverer is the part of *discover.Discoverer the UI uses.
@@ -168,6 +170,7 @@ func (s *Server) routes() *http.ServeMux {
 	mux.HandleFunc("POST /follows/{id}/refresh", s.handle(s.refresh))
 	mux.HandleFunc("GET /settings", s.handle(s.settings))
 	mux.HandleFunc("POST /settings", s.handle(s.saveSettings))
+	mux.HandleFunc("POST /settings/interval", s.handle(s.saveInterval))
 	mux.HandleFunc("POST /import", s.handle(s.importOPML))
 	mux.HandleFunc("GET /export.opml", s.handle(s.exportOPML))
 	mux.HandleFunc("GET /events", s.events)

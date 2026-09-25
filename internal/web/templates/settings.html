@@ -21,6 +21,18 @@
 <div class="buttons"><button type="submit">Save</button></div>
 </form>
 
+<h2 id="interval">Update limit</h2>
+<p>Follows are never checked more often than this, whatever their tier. Type an interval like 30m, 3h, 1h30m or 2d, or leave it empty for no limit. The refresh button ignores the limit.</p>
+<form class="interval-form" method="post" action="/settings/interval">
+{{- with .IntervalError}}
+<p class="flash error" role="alert">{{.}}</p>
+{{- end}}
+<label for="min-interval">Minimum interval</label>
+<input id="min-interval" name="interval" value="{{.MinInterval}}" placeholder="no limit" maxlength="20" autocomplete="off" spellcheck="false">
+<p class="hint">Checked every:{{range $i, $t := .Intervals}}{{if $i}} ·{{end}} <span aria-hidden="true">{{$t.Tier.Emoji}}</span> {{$t.Tier.Name}} {{$t.Every}}{{end}}. Up to 50% more is added at random so fetches spread out.</p>
+<div class="buttons"><button type="submit">Save</button></div>
+</form>
+
 <h2 id="import">Import</h2>
 <p>Import an OPML file exported from Fraidycat or another feed reader. Feeds you already follow are skipped.</p>
 <form class="import-form" method="post" action="/import" enctype="multipart/form-data" hx-disabled-elt="find button">

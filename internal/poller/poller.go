@@ -360,7 +360,7 @@ func (p *Poller) fetchOne(ctx context.Context, f model.Follow) (outcome, error) 
 		return abandoned, ctx.Err()
 	}
 
-	r := fetchResult(f, res, fetchErr, p.now(), p.jitter())
+	r := fetchResult(f, res, fetchErr, p.now(), p.jitter(), p.MinInterval(ctx))
 	// a result that arrived just as ctx ended is still worth keeping
 	rctx, rcancel := context.WithTimeout(context.WithoutCancel(ctx), recordTimeout)
 	recordErr := p.record(rctx, r)
@@ -407,7 +407,9 @@ func (e *fetchError) Error() string { return e.msg }
 func (e *fetchError) Unwrap() error { return e.err }
 
 // fetchResult turns the outcome of a fetch at now into what RecordFetch stores.
-func fetchResult(f model.Follow, res *feed.Result, err error, now time.Time, jitter float64) store.FetchResult {
+// minInterval raises the tier's interval (see EffectiveInterval).
+func fetchResult(f model.Follow, res *feed.Result, err error, now time.Time, jitter float64, minInterval time.Duration) store.FetchResult {
+	interval := EffectiveInterval(f.Importance, minInterval)
 	r := store.FetchResult{FollowID: f.ID, FeedURL: f.FeedURL, Importance: f.Importance, FetchedAt: now}
 	if err != nil {
 		var retryAfter time.Duration
@@ -415,10 +417,10 @@ func fetchResult(f model.Follow, res *feed.Result, err error, now time.Time, jit
 			retryAfter = he.RetryAfter
 		}
 		r.Err = errorMessage(err)
-		r.NextFetchAt = NextFetch(now, f.Importance, f.ErrorCount+1, retryAfter, jitter)
+		r.NextFetchAt = nextFetch(now, interval, f.ErrorCount+1, retryAfter, jitter)
 		return r
 	}
-	r.NextFetchAt = NextFetch(now, f.Importance, 0, 0, jitter)
+	r.NextFetchAt = nextFetch(now, interval, 0, 0, jitter)
 	r.ETag = res.ETag
 	r.LastModified = res.LastModified
 	if res.NotModified {
@@ -482,7 +484,11 @@ func Interval(imp model.Importance) time.Duration {
 //
 // Jitter outside [0,1] is clamped.
 func NextFetch(now time.Time, imp model.Importance, errorCount int, retryAfter time.Duration, jitter float64) time.Time {
-	base := Interval(imp)
+	return nextFetch(now, Interval(imp), errorCount, retryAfter, jitter)
+}
+
+// nextFetch is NextFetch for an interval that may already include the minimum.
+func nextFetch(now time.Time, base time.Duration, errorCount int, retryAfter time.Duration, jitter float64) time.Time {
 	d := base
 	if errorCount > 0 {
 		d = min(base<<min(errorCount-1, maxDoublings), max(maxBackoff, base))

@@ -53,7 +53,8 @@ genuinely wrong, make the smallest change, update every caller, and report it.
   up to a year `Jan 2`, older `Jan 2, 2006`. Zero time renders nothing.
 - Sparkline: a 120x20 inline SVG polyline of posts per day, newest on the right. Use the last 60 days (pink stroke) if there was any
   activity in them, else the last 180 days bucketed per 3 days (grey stroke). Render nothing when there is no activity.
-- Polling: see `poller.Interval` / `poller.NextFetch`. Conditional GETs (ETag / Last-Modified). Per-host throttling in
+- Polling: see `poller.Interval` / `poller.NextFetch`. An optional global minimum interval (Settings, stored as
+  `min_interval`) raises every faster tier to it; see `poller.EffectiveInterval`. Conditional GETs (ETag / Last-Modified). Per-host throttling in
   `feed.Client` keeps YouTube (84 feeds) from rate limiting us.
 - OPML: Fraidycat exports `category="importance/7,👨‍💻"`, `created="Wed Jun 24 2026 10:28:09 GMT-0400 (Eastern Daylight Time)"`,
   `text`, optional `title`, `xmlUrl`, `htmlUrl`. Export writes the same shape so the file can go back into Fraidycat.

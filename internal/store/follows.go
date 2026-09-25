@@ -365,6 +365,31 @@ func (s *Store) DeleteFollow(ctx context.Context, id int64) error {
 	return nil
 }
 
+// SetNextFetch reschedules follows in one transaction. Ids that no longer
+// exist are ignored.
+func (s *Store) SetNextFetch(ctx context.Context, next map[int64]time.Time) error {
+	if len(next) == 0 {
+		return nil
+	}
+	err := s.inTx(ctx, func(tx *sql.Tx) error {
+		stmt, err := tx.PrepareContext(ctx, `UPDATE follows SET next_fetch_at = ? WHERE id = ?`)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+		for id, at := range next {
+			if _, err := stmt.ExecContext(ctx, toMS(at), id); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("store: set next fetch: %w", err)
+	}
+	return nil
+}
+
 // DueFollows returns up to limit follows whose NextFetchAt <= now, oldest due first.
 // A limit below 1 returns nothing, so a poller without free workers gets no work.
 func (s *Store) DueFollows(ctx context.Context, now time.Time, limit int) ([]model.Follow, error) {

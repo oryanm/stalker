@@ -168,7 +168,7 @@ func TestFetchResult(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := fetchResult(tt.follow, tt.res, tt.err, now, 0)
+			got := fetchResult(tt.follow, tt.res, tt.err, now, 0, 0)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("fetchResult() =\n%+v\nwant\n%+v", got, tt.want)
 			}

@@ -21,6 +21,7 @@ import (
 	"github.com/oryanm/stalker/internal/events"
 	"github.com/oryanm/stalker/internal/model"
 	"github.com/oryanm/stalker/internal/opml"
+	"github.com/oryanm/stalker/internal/poller"
 	"github.com/oryanm/stalker/internal/store"
 )
 
@@ -636,6 +637,16 @@ type settingsPage struct {
 	Flash       string
 	ImportError string
 	Now         time.Time
+
+	MinInterval   string // as typed, or the stored limit
+	IntervalError string
+	Intervals     []tierInterval
+}
+
+// tierInterval is how often a tier is checked once the limit applies.
+type tierInterval struct {
+	Tier  model.Tier
+	Every string
 }
 
 func (s *Server) settings(w http.ResponseWriter, r *http.Request) error {
@@ -681,7 +692,41 @@ func (s *Server) settingsData(ctx context.Context) (settingsPage, error) {
 		data.TierCounts = append(data.TierCounts, tierCount{t, counts[t.Importance]})
 	}
 	slices.SortFunc(data.Failing, compareTitles)
+	data.setIntervals(s.fetch.MinInterval(ctx))
 	return data, nil
+}
+
+func (p *settingsPage) setIntervals(minInterval time.Duration) {
+	p.MinInterval = poller.FormatInterval(minInterval)
+	p.Intervals = nil
+	for _, t := range model.Tiers {
+		p.Intervals = append(p.Intervals, tierInterval{t, poller.FormatInterval(poller.EffectiveInterval(t.Importance, minInterval))})
+	}
+}
+
+func (s *Server) saveInterval(w http.ResponseWriter, r *http.Request) error {
+	r.Body = http.MaxBytesReader(w, r.Body, maxFormBytes)
+	if err := r.ParseForm(); err != nil {
+		return errUnreadableForm
+	}
+	typed := r.PostForm.Get("interval")
+	d, err := poller.ParseInterval(typed)
+	if err == nil {
+		err = s.fetch.SetMinInterval(r.Context(), d)
+		if err != nil {
+			return err
+		}
+		http.Redirect(w, r, "/settings?saved=1#interval", http.StatusSeeOther)
+		return nil
+	}
+	page, derr := s.settingsData(r.Context())
+	if derr != nil {
+		return derr
+	}
+	page.MinInterval = typed
+	page.IntervalError = strings.ToUpper(err.Error()[:1]) + err.Error()[1:] + "."
+	s.page(w, r, http.StatusUnprocessableEntity, "settings", page)
+	return nil
 }
 
 func (s *Server) saveSettings(w http.ResponseWriter, r *http.Request) error {

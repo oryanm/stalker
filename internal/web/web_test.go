@@ -39,6 +39,24 @@ type fakeFetcher struct {
 	kicks    int
 	fetching map[int64]bool
 	fetch    func(ctx context.Context, id int64) error // optional behaviour of FetchNow
+	limit    time.Duration
+	limitErr error
+}
+
+func (f *fakeFetcher) MinInterval(context.Context) time.Duration {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.limit
+}
+
+func (f *fakeFetcher) SetMinInterval(_ context.Context, d time.Duration) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.limitErr != nil {
+		return f.limitErr
+	}
+	f.limit = d
+	return nil
 }
 
 func (f *fakeFetcher) FetchNow(ctx context.Context, id int64) error {
@@ -1270,6 +1288,52 @@ func TestSettings(t *testing.T) {
 		}
 	}
 	wantStatus(t, e.post("/settings", url.Values{"sort": {"random"}}), http.StatusBadRequest)
+}
+
+func TestUpdateLimit(t *testing.T) {
+	e := newEnv(t)
+
+	w := e.get("/settings")
+	wantStatus(t, w, http.StatusOK)
+	wantContains(t, w.Body.String(),
+		`<form class="interval-form" method="post" action="/settings/interval">`,
+		`<input id="min-interval" name="interval" value="" placeholder="no limit"`,
+		`Checked every: <span aria-hidden="true">🚄</span> Realtime 10m · <span aria-hidden="true">🌄</span> Frequent 1h ·`,
+	)
+
+	w = e.post("/settings/interval", url.Values{"interval": {" 3H "}})
+	wantStatus(t, w, http.StatusSeeOther)
+	if loc := w.Header().Get("Location"); loc != "/settings?saved=1#interval" {
+		t.Errorf("Location = %q", loc)
+	}
+	if got := e.fetcher.MinInterval(context.Background()); got != 3*time.Hour {
+		t.Errorf("limit = %v, want 3h", got)
+	}
+	w = e.get("/settings?saved=1")
+	wantContains(t, w.Body.String(),
+		`name="interval" value="3h"`,
+		`Realtime 3h · <span aria-hidden="true">🌄</span> Frequent 3h · <span aria-hidden="true">🐇</span> Occasional 4h`,
+		`Rarely 1d.`,
+	)
+
+	// what was typed stays in the box next to the error, and the limit is untouched
+	for _, bad := range []string{"3", "soon", "10s", "45d"} {
+		w = e.post("/settings/interval", url.Values{"interval": {bad}})
+		wantStatus(t, w, http.StatusUnprocessableEntity)
+		wantContains(t, w.Body.String(), `<p class="flash error" role="alert">`, `name="interval" value="`+bad+`"`)
+	}
+	if got := e.fetcher.MinInterval(context.Background()); got != 3*time.Hour {
+		t.Errorf("limit after bad input = %v, want 3h", got)
+	}
+
+	w = e.post("/settings/interval", url.Values{"interval": {""}})
+	wantStatus(t, w, http.StatusSeeOther)
+	if got := e.fetcher.MinInterval(context.Background()); got != 0 {
+		t.Errorf("limit after clearing = %v, want none", got)
+	}
+
+	e.fetcher.limitErr = errors.New("disk full")
+	wantStatus(t, e.post("/settings/interval", url.Values{"interval": {"1h"}}), http.StatusInternalServerError)
 }
 
 func TestErrorPages(t *testing.T) {

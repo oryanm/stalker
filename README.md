@@ -147,6 +147,9 @@ stalker help [command]
 | Rarely     | ☂  | `importance/365` | 24 to 36 h    |
 
 - The interval is the tier's base plus up to 50% random jitter, so follows imported together drift apart.
+- **Update limit** (Settings): a minimum interval such as `3h`, `90m` or `2d`. Tiers checked more often than that slow down
+  to it (with a 3h limit, Realtime and Frequent are checked every 3 hours) and slower tiers are unaffected. Changing it
+  reschedules follows right away. The refresh button and newly added follows ignore it.
 - Requests are conditional (`If-None-Match`, `If-Modified-Since`); an unchanged feed costs one `304`.
 - After consecutive failures the delay doubles from the base (up to 64 times it), capped at 24 hours plus jitter, and never
   sooner than a `Retry-After` the server sent. One success resets it. The row shows the error until then.

@@ -444,6 +444,31 @@ func TestSameFeedUnderAnotherURL(t *testing.T) {
 	}
 }
 
+func TestSetNextFetch(t *testing.T) {
+	ctx := t.Context()
+	st := openStore(t)
+	a := model.Follow{FeedURL: "https://a.example/feed"}
+	b := model.Follow{FeedURL: "https://b.example/feed"}
+	for _, f := range []*model.Follow{&a, &b} {
+		if err := st.CreateFollow(ctx, f); err != nil {
+			t.Fatal(err)
+		}
+	}
+	at := time.Date(2026, 9, 25, 15, 0, 0, 0, time.UTC)
+	if err := st.SetNextFetch(ctx, map[int64]time.Time{a.ID: at, 999: at}); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := st.GetFollow(ctx, a.ID); !got.NextFetchAt.Equal(at) {
+		t.Errorf("a NextFetchAt = %v, want %v", got.NextFetchAt, at)
+	}
+	if got, _ := st.GetFollow(ctx, b.ID); !got.NextFetchAt.Equal(b.NextFetchAt) {
+		t.Errorf("b NextFetchAt = %v, want it unchanged", got.NextFetchAt)
+	}
+	if err := st.SetNextFetch(ctx, nil); err != nil {
+		t.Errorf("SetNextFetch(nil) = %v", err)
+	}
+}
+
 func TestDeleteFollow(t *testing.T) {
 	s := openStore(t)
 	ctx := t.Context()
