@@ -3,9 +3,18 @@
 (function () {
   "use strict";
 
+  // the arrow reflects whether its row's box shows the posts
+  function sync(box) {
+    var open = box.dataset.open === "posts" ? "true" : "false";
+    document.querySelectorAll('[aria-controls="' + box.id + '"]').forEach(function (t) {
+      t.setAttribute("aria-expanded", open);
+    });
+  }
+
   function close(box) {
     box.replaceChildren();
     delete box.dataset.open;
+    sync(box);
   }
 
   // a row's posts/edit links toggle its box: a second click closes it without a request
@@ -24,6 +33,17 @@
       return;
     }
     box.dataset.open = el.dataset.toggle;
+    sync(box);
+  });
+
+  // SSE and refresh re-render a row's summary, arrow included
+  document.addEventListener("htmx:afterSwap", function (e) {
+    var summary = e.detail && e.detail.target;
+    var row = summary && summary.closest && summary.closest(".follow");
+    var box = row && row.querySelector(".posts");
+    if (box) {
+      sync(box);
+    }
   });
 
   document.addEventListener("click", function (e) {

@@ -10,6 +10,7 @@
 
 {{define "summary"}}{{$f := .Follow -}}
 <div class="head{{with ageClass .LastPost .Now}} {{.}}{{end}}">
+<a class="toggle" href="/follows/{{$f.ID}}/posts" hx-get="/follows/{{$f.ID}}/posts" hx-target="#posts-{{$f.ID}}" hx-swap="innerHTML" data-toggle="posts" aria-controls="posts-{{$f.ID}}" aria-expanded="false" title="Recent posts"><svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="visually-hidden">Recent posts</span></a>
 {{- with .Link}}
 <a class="title" href="{{.}}" target="_blank" rel="noopener noreferrer" dir="auto">{{$f.DisplayTitle}}</a>
 {{- else}}
@@ -26,7 +27,6 @@
 <span class="fetching" title="Fetching now">fetching…</span>
 {{- end}}
 <div class="controls">
-<a class="expand" href="/follows/{{$f.ID}}/posts" hx-get="/follows/{{$f.ID}}/posts" hx-target="#posts-{{$f.ID}}" hx-swap="innerHTML" data-toggle="posts">posts</a>
 <a class="edit" href="/follows/{{$f.ID}}/edit" hx-get="/follows/{{$f.ID}}/edit" hx-target="#posts-{{$f.ID}}" hx-swap="innerHTML" data-toggle="edit">edit</a>
 <form class="refresh" method="post" action="/follows/{{$f.ID}}/refresh" hx-post="/follows/{{$f.ID}}/refresh" hx-target="closest .summary" hx-swap="innerHTML" hx-disabled-elt="find button">
 <button type="submit" class="link" title="Fetch now">refresh</button>
@@ -57,9 +57,7 @@
 {{- else}}
 <p class="empty">No posts yet.</p>
 {{- end}}
-{{- if .Fragment}}
-<button type="button" class="link collapse" data-collapse>collapse</button>
-{{- else}}
+{{- if not .Fragment}}
 <p><a href="{{.Back}}">Back to the list</a></p>
 {{- end}}
 </div>

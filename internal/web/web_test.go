@@ -587,7 +587,8 @@ func TestHomeRows(t *testing.T) {
 		`<li class="post age-d"><a href="https://fresh.example/2"`,
 		`<li class="post age-M"><a href="https://fresh.example/3"`,
 		`hx-post="/follows/1/refresh" hx-target="closest .summary"`,
-		`hx-get="/follows/1/posts" hx-target="#posts-1"`,
+		`<a class="toggle" href="/follows/1/posts" hx-get="/follows/1/posts" hx-target="#posts-1"`,
+		`aria-controls="posts-1" aria-expanded="false"`,
 		`hx-get="/follows/1/edit" hx-target="#posts-1"`,
 		`<div class="posts" id="posts-1"></div>`,
 		`<li id="follow-2" class="follow age-M">`,
@@ -598,7 +599,7 @@ func TestHomeRows(t *testing.T) {
 		// the realtime tab takes the colour of its newest post
 		`<li class="tag age-h active" data-tag="🏠">`,
 	)
-	wantNotContains(t, body, "Not shown inline", `<b>"gone"</b>`)
+	wantNotContains(t, body, "Not shown inline", `<b>"gone"</b>`, `class="expand"`)
 	if strings.Count(body, `class="fetching"`) != 1 {
 		t.Error("only the fetching follow shows the indicator")
 	}
@@ -1111,7 +1112,8 @@ func TestPosts(t *testing.T) {
 	if n := strings.Count(body, `<li class="post`); n != 20 {
 		t.Errorf("%d posts, want 20", n)
 	}
-	wantContains(t, body, `>Post 0</a> <span class="age">1m</span>`, `>Post 19</a>`, `data-collapse>collapse</button>`)
+	wantContains(t, body, `>Post 0</a> <span class="age">1m</span>`, `>Post 19</a>`)
+	wantNotContains(t, body, "collapse", "Back to the list")
 	wantNotContains(t, body, "<html", ">Post 20<")
 
 	w = e.get("/follows/1/posts")
