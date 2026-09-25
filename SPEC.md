@@ -92,8 +92,12 @@ scripts, styles or event handlers); `X-Content-Type-Options: nosniff`; `Referrer
 data are text only, never raw HTML. External links get `rel="noopener noreferrer"` and open in a new tab. Upload size capped
 (5 MiB).
 
-Look: clean and readable, Fraidycat-inspired (serif-ish headings, generous line height, coloured ages), light and dark via
-`prefers-color-scheme`. One CSS file in `static/`. No external fonts or CDNs.
+Themes: every theme is one stylesheet in `internal/web/static/themes/<id>.css` over the same markup, registered in
+`internal/web/theme.go` (id, name, description, color-scheme) and chosen on the Settings page (stored as `theme`; the first
+entry is the default). A theme may hide or restyle elements but not change the markup, so new markup must be styled or hidden in
+every theme. `receiver` (default) is a 1970s stereo receiver in the Darcula Forest palette with a tuning dial; `classic` is the
+original Fraidycat-inspired list, light and dark via `prefers-color-scheme`. No external fonts or CDNs: fonts live in
+`static/fonts/` with their OFL licences.
 
 ## CLI
 

@@ -473,3 +473,35 @@ func TestIsLocalPath(t *testing.T) {
 		}
 	}
 }
+
+func TestDial(t *testing.T) {
+	now := time.Date(2026, 6, 24, 12, 0, 0, 0, time.UTC)
+	if got := dialX(0); got != 1000 {
+		t.Errorf("dialX(now) = %v, want 1000", got)
+	}
+	if got := dialX(2 * dialSpan); got != 0 {
+		t.Errorf("dialX(beyond the span) = %v, want 0", got)
+	}
+	if day, week := dialX(24*time.Hour), dialX(7*24*time.Hour); day <= week {
+		t.Errorf("a day ago (%v) should sit right of a week ago (%v)", day, week)
+	}
+
+	rows := []row{
+		{Follow: model.Follow{ID: 7, LastPostAt: now}, Activity: []time.Time{now, now}, Now: now},
+		{Follow: model.Follow{ID: 8, LastPostAt: now.Add(-60 * day)}, Now: now},
+		{Follow: model.Follow{ID: 9}, Now: now}, // no posts: no station
+	}
+	got := string(dial(rows))
+	for _, want := range []string{
+		`<svg class="stations" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">`,
+		`<line class="station age-h" data-follow="7" x1="1000" x2="1000" y1="100" y2="8"/>`,
+		`<line class="station age-M" data-follow="8" `,
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("dial lacks %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, `data-follow="9"`) {
+		t.Errorf("a follow without posts got a station:\n%s", got)
+	}
+}

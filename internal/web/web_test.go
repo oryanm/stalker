@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"mime/multipart"
 	"net/http"
@@ -389,8 +390,8 @@ func TestPublicRoutes(t *testing.T) {
 		{"/static/htmx.min.js", http.StatusOK, "text/javascript; charset=utf-8", "no-cache"},
 		{"/static/htmx-sse.js", http.StatusOK, "text/javascript; charset=utf-8", "no-cache"},
 		{"/static/app.js", http.StatusOK, "text/javascript; charset=utf-8", "no-cache"},
-		{e.srv.staticURL("style.css"), http.StatusOK, "text/css; charset=utf-8", "public, max-age=31536000, immutable"},
-		{"/static/style.css?v=stale", http.StatusOK, "text/css; charset=utf-8", "no-cache"},
+		{e.srv.staticURL("themes/receiver.css"), http.StatusOK, "text/css; charset=utf-8", "public, max-age=31536000, immutable"},
+		{"/static/themes/classic.css?v=stale", http.StatusOK, "text/css; charset=utf-8", "no-cache"},
 		{"/static/", http.StatusNotFound, "", ""},
 		{"/static/missing.js", http.StatusNotFound, "", ""},
 		{"/static/static/app.js", http.StatusNotFound, "", ""},
@@ -614,6 +615,9 @@ func TestHomeRows(t *testing.T) {
 		`<li id="follow-3" class="follow">`,
 		`<span class="error" tabindex="0" title="Last fetch failed: HTTP 404 &lt;b&gt;&#34;gone&#34;&lt;/b&gt;">`,
 		`<span class="fetching"`,
+		// the tuning dial has a station for every follow with posts
+		`<line class="station age-h" data-follow="1" `,
+		`<line class="station age-M" data-follow="2" `,
 		// the realtime tab takes the colour of its newest post
 		`<li class="tag age-h active" data-tag="🏠">`,
 	)
@@ -1288,6 +1292,69 @@ func TestSettings(t *testing.T) {
 		}
 	}
 	wantStatus(t, e.post("/settings", url.Values{"sort": {"random"}}), http.StatusBadRequest)
+}
+
+func TestTheme(t *testing.T) {
+	e := newEnv(t)
+
+	// the receiver is the default
+	w := e.get("/")
+	wantContains(t, w.Body.String(),
+		`<html lang="en" data-theme="receiver">`,
+		`<meta name="color-scheme" content="dark">`,
+		`<link rel="stylesheet" href="`+e.srv.staticURL("themes/receiver.css")+`">`,
+	)
+	w = e.get("/settings")
+	wantContains(t, w.Body.String(),
+		`<form class="theme-form" method="post" action="/settings/theme" hx-boost="false">`,
+		`<input type="radio" name="theme" value="receiver" checked>`,
+		`<input type="radio" name="theme" value="classic">`,
+	)
+
+	w = e.post("/settings/theme", url.Values{"theme": {"classic"}})
+	wantStatus(t, w, http.StatusSeeOther)
+	if loc := w.Header().Get("Location"); loc != "/settings?saved=1#theme" {
+		t.Errorf("Location = %q", loc)
+	}
+	w = e.get("/")
+	wantContains(t, w.Body.String(),
+		`<html lang="en" data-theme="classic">`,
+		`<meta name="color-scheme" content="light dark">`,
+		`<link rel="stylesheet" href="`+e.srv.staticURL("themes/classic.css")+`">`,
+	)
+	wantContains(t, e.get("/settings").Body.String(), `<input type="radio" name="theme" value="classic" checked>`)
+
+	// the choice survives a restart
+	srv, err := New(e.st, e.disc, e.fetcher, nil, Config{NoAuth: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := srv.currentTheme().ID; got != "classic" {
+		t.Errorf("theme after restart = %q, want classic", got)
+	}
+
+	wantStatus(t, e.post("/settings/theme", url.Values{"theme": {"neon"}}), http.StatusBadRequest)
+	wantContains(t, e.get("/").Body.String(), `data-theme="classic"`)
+
+	// an unknown stored theme falls back to the default
+	if err := e.st.SetSetting(context.Background(), settingTheme, "gone"); err != nil {
+		t.Fatal(err)
+	}
+	srv, err = New(e.st, e.disc, e.fetcher, nil, Config{NoAuth: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := srv.currentTheme().ID; got != "receiver" {
+		t.Errorf("theme with an unknown setting = %q, want receiver", got)
+	}
+}
+
+func TestEveryThemeHasAStylesheet(t *testing.T) {
+	for _, th := range themes {
+		if _, err := fs.Stat(staticFS, "static/"+th.CSS()); err != nil {
+			t.Errorf("theme %q: %v", th.ID, err)
+		}
+	}
 }
 
 func TestUpdateLimit(t *testing.T) {

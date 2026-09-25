@@ -1,38 +1,43 @@
-{{define "layout"}}<!doctype html>
-<html lang="en">
+{{define "layout"}}{{$theme := theme}}<!doctype html>
+<html lang="en" data-theme="{{$theme.ID}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="{{$theme.ColorScheme}}">
 <meta name="referrer" content="no-referrer">
 <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"allowScriptTags":false,"responseHandling":[{"code":"204","swap":false},{"code":"...","swap":true}]}'>
 <title>{{with .Title}}{{.}} · {{end}}stalker</title>
-<link rel="stylesheet" href="{{static "style.css"}}">
+<link rel="stylesheet" href="{{static $theme.CSS}}">
 <script src="{{static "htmx.min.js"}}" defer></script>
 <script src="{{static "htmx-sse.js"}}" defer></script>
 <script src="{{static "app.js"}}" defer></script>
 </head>
 <body hx-boost="true" hx-ext="sse" sse-connect="/events">
+<div class="receiver">
+<div class="faceplate">
 <header class="top">
 <a class="brand" href="/">stalker</a>
+<span class="live" title="Lit while live updates are coming in">live</span>
 {{- with .Tabs}}
 <nav class="tags" aria-label="Tags">
 <ul>
 {{- range .}}
-<li class="tag{{with .AgeClass}} {{.}}{{end}}{{if .Active}} active{{end}}" data-tag="{{.Tag}}"><a href="{{homeURL .Tag}}" title="{{.Count}} follows"{{if .Active}} aria-current="page"{{end}}>{{.Tag}}</a></li>
+<li class="tag{{with .AgeClass}} {{.}}{{end}}{{if .Active}} active{{end}}" data-tag="{{.Tag}}"><a href="{{homeURL .Tag}}" title="{{.Count}} follows"{{if .Active}} aria-current="page"{{end}}><span class="face">{{.Tag}}</span></a></li>
 {{- end}}
 </ul>
 </nav>
 {{- end}}
 <nav class="actions" aria-label="Actions">
-<a class="add" href="{{.AddURL}}" title="Add a follow"><span aria-hidden="true">+</span> Add</a>
-<a class="settings" href="/settings">Settings</a>
+<a class="add" href="{{.AddURL}}" title="Add a follow"><span class="face"><span aria-hidden="true">+</span> Add</span></a>
+<a class="settings" href="/settings"><span class="face">Settings</span></a>
 </nav>
 </header>
-<div id="notice" sse-swap="follows-changed" hx-swap="innerHTML"></div>
 <main>
 {{template "content" .}}
 </main>
+</div>
+</div>
+<div id="notice" sse-swap="follows-changed" hx-swap="innerHTML"></div>
 </body>
 </html>
 {{end}}

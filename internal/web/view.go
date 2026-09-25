@@ -461,3 +461,38 @@ func parseHTTPURL(raw string) (*url.URL, error) {
 	}
 	return u, nil
 }
+
+// dialSpan is the oldest age the tuning dial shows; older posts sit at its left end.
+const dialSpan = 365 * day
+
+// dialX places an age on the dial's 0 to 1000 scale: a year ago on the left,
+// now on the right, logarithmic so the last hours and days get room.
+func dialX(age time.Duration) float64 {
+	h := max(age.Hours(), 0)
+	u := math.Log1p(h) / math.Log1p(dialSpan.Hours())
+	return 1000 * (1 - min(u, 1))
+}
+
+// dial renders the tuning dial's stations: one glowing tick per follow at the
+// age of its latest post, taller for busier follows. Built from numbers and
+// constant class names only, so it is safe to mark as template.HTML.
+func dial(rows []row) template.HTML {
+	peak := 1
+	for _, r := range rows {
+		peak = max(peak, len(r.Activity))
+	}
+	var b strings.Builder
+	b.WriteString(`<svg class="stations" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">`)
+	for _, r := range rows {
+		last := r.LastPost()
+		if last.IsZero() {
+			continue
+		}
+		x := num(dialX(r.Now.Sub(last)))
+		top := 100 - (30 + 62*math.Sqrt(float64(len(r.Activity))/float64(peak)))
+		fmt.Fprintf(&b, `<line class="station %s" data-follow="%d" x1="%s" x2="%s" y1="100" y2="%s"/>`,
+			ageClass(last, r.Now), r.Follow.ID, x, x, num(top))
+	}
+	b.WriteString(`</svg>`)
+	return template.HTML(b.String())
+}

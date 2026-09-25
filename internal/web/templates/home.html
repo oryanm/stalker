@@ -8,17 +8,29 @@
 </section>
 {{- else}}
 <div class="bar">
-<h1 class="tag-title">{{.Tag}}</h1>
+<div class="dial" data-dial>
+<div class="dial-head">
+<h1 class="tag-title"><span class="tag-emoji">{{.Tag}}</span> <span class="tier-name">{{.Tier.Name}}</span></h1>
+<p class="readout" data-tuned>{{len .Rows}} {{if eq (len .Rows) 1}}follow{{else}}follows{{end}}</p>
+</div>
+<div class="scale">
+{{dial .Rows}}
+<ol class="marks" aria-hidden="true"><li class="m-1y">1y</li><li class="m-3mo">3mo</li><li class="m-1mo">1mo</li><li class="m-1w">1w</li><li class="m-1d">1d</li><li class="m-1h">1h</li><li class="m-now">now</li></ol>
+<span class="needle" aria-hidden="true"></span>
+</div>
+</div>
 <nav class="tiers" aria-label="Importance">
+<span class="mount" aria-hidden="true"><span class="knob"></span><span class="legend">importance</span></span>
 <ul>
 {{- range .TierTabs}}
 <li class="tier{{if .Active}} active{{end}}" data-tier="{{.Tier.Importance}}" data-count="{{.Count}}"><a href="{{tierURL $.Tag .Tier.Importance}}" title="{{.Tier.Description}}"{{if .Active}} aria-current="page"{{end}}><span aria-hidden="true">{{.Tier.Emoji}}</span> {{.Tier.Name}}{{if .Count}} <span class="count">{{.Count}}</span>{{end}}</a></li>
 {{- end}}
 </ul>
 </nav>
+<p class="lamps" aria-hidden="true"><span class="lamp age-h">posted in the last 3 days</span><span class="lamp age-d">in the last month</span><span class="lamp age-M">longer ago</span></p>
 <form class="sort" method="post" action="/settings">
 <input type="hidden" name="next" value="{{.Self}}">
-<span class="label">Sort:</span>
+<span class="label">Sort</span>
 {{- range sortOptions}}
 <button type="submit" name="sort" value="{{.Value}}" class="link{{if eq .Value $.Sort}} selected{{end}}"{{if eq .Value $.Sort}} aria-pressed="true"{{end}}>{{.Label}}</button>
 {{- end}}

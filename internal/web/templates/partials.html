@@ -19,7 +19,9 @@
 {{- with timeAgo .LastPost .Now}}
 <span class="age" title="Latest post">{{.}}</span>
 {{- end}}
-{{sparkline .Activity .Now}}
+{{- with sparkline .Activity .Now}}
+<span class="scope">{{.}}</span>
+{{- end}}
 {{- with errorText $f}}
 <span class="error" tabindex="0" title="{{.}}"><span aria-hidden="true">⚠</span><span class="error-text">{{.}}</span></span>
 {{- end}}

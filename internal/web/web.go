@@ -90,6 +90,9 @@ type Server struct {
 
 	done      chan struct{}
 	closeOnce sync.Once
+
+	themeMu sync.RWMutex
+	theme   theme
 }
 
 // New validates cfg (a password is required unless NoAuth) and parses templates.
@@ -136,6 +139,7 @@ func New(st *store.Store, disc Discoverer, f Fetcher, ev *events.Broker, cfg Con
 			s.allowedHosts[h] = true
 		}
 	}
+	s.loadTheme(context.Background())
 	if s.version, err = hashFiles(static); err != nil {
 		return nil, fmt.Errorf("web: %w", err)
 	}
@@ -171,6 +175,7 @@ func (s *Server) routes() *http.ServeMux {
 	mux.HandleFunc("GET /settings", s.handle(s.settings))
 	mux.HandleFunc("POST /settings", s.handle(s.saveSettings))
 	mux.HandleFunc("POST /settings/interval", s.handle(s.saveInterval))
+	mux.HandleFunc("POST /settings/theme", s.handle(s.saveTheme))
 	mux.HandleFunc("POST /import", s.handle(s.importOPML))
 	mux.HandleFunc("GET /export.opml", s.handle(s.exportOPML))
 	mux.HandleFunc("GET /events", s.events)

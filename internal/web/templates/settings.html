@@ -33,6 +33,15 @@
 <div class="buttons"><button type="submit">Save</button></div>
 </form>
 
+<h2 id="theme">Theme</h2>
+{{- $current := theme}}
+<form class="theme-form" method="post" action="/settings/theme" hx-boost="false">
+{{- range themes}}
+<label class="radio"><input type="radio" name="theme" value="{{.ID}}"{{if eq .ID $current.ID}} checked{{end}}> <span class="theme-name">{{.Name}}</span> <span class="hint">{{.Description}}</span></label>
+{{- end}}
+<div class="buttons"><button type="submit">Use this theme</button></div>
+</form>
+
 <h2 id="import">Import</h2>
 <p>Import an OPML file exported from Fraidycat or another feed reader. Feeds you already follow are skipped.</p>
 <form class="import-form" method="post" action="/import" enctype="multipart/form-data" hx-disabled-elt="find button">

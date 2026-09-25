@@ -20,6 +20,7 @@ func (s *Server) parseTemplates() error {
 		"timeAgo":     timeAgo,
 		"ageClass":    ageClass,
 		"sparkline":   sparkline,
+		"dial":        dial,
 		"tiers":       func() []model.Tier { return model.Tiers },
 		"sortOptions": func() []sortOption { return sortOptions },
 		"safeURL":     safeURL,
@@ -29,6 +30,8 @@ func (s *Server) parseTemplates() error {
 		"errorText":   errorSummary,
 		"withNow":     withNow,
 		"tierSelect":  tierSelect,
+		"theme":       s.currentTheme,
+		"themes":      func() []theme { return themes },
 	}
 	base, err := template.New("").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/partials.html")
 	if err != nil {

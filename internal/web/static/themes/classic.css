@@ -860,3 +860,30 @@ details.delete summary {
     animation: none;
   }
 }
+
+/* markup the receiver theme adds that this look leaves out */
+
+.live,
+.dial .scale,
+.dial .readout,
+.mount,
+.lamps,
+.tier-name {
+  display: none;
+}
+
+.receiver,
+.faceplate,
+.dial,
+.dial-head {
+  display: contents;
+}
+
+.theme-form .radio {
+  flex-wrap: wrap;
+}
+
+.theme-form .radio .hint {
+  flex-basis: 100%;
+  margin: 0 0 0.5rem 1.75rem;
+}

@@ -1,0 +1,2060 @@
+/*
+ * stalker: "The Receiver". The page is a 1970s stereo receiver: a walnut sleeve,
+ * a satin aluminium faceplate in a dark cabinet, a backlit tuning dial where the follows live,
+ * latching keys and a rotary selector. No inline styles (CSP).
+ */
+
+@font-face {
+  font-family: "Barlow";
+  src: url("../fonts/barlow-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("../fonts/barlow-400-ext.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("../fonts/barlow-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("../fonts/barlow-600.woff2") format("woff2");
+  font-weight: 600 700;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("../fonts/barlow-600-ext.woff2") format("woff2");
+  font-weight: 600 700;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  src: url("../fonts/barlow-semicondensed-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Michroma";
+  src: url("../fonts/michroma-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  /*
+   * Darcula Forest by Oryan (https://github.com/oryanm/darcula-forest, MIT licence).
+   * The constants and derivations are copied from its darcula/css/palette.css;
+   * every colour below is built from them.
+   */
+  --main-hue: 128;
+  --comp-offset: 30;
+  --secondary-hue: calc(var(--main-hue) - var(--comp-offset));
+  --tertiary-hue: calc(var(--main-hue) + var(--comp-offset));
+  --base-chroma: 0.11;
+  --contrast: 0.5;
+  --red-hue: 28;
+  --blue-hue: 248;
+
+  --editor-bg: oklch(calc(0.5 - var(--contrast) / 2) 0.010 var(--main-hue));
+  --search-result-bg: oklch(from var(--editor-bg) calc(l + 0.1) c h);
+  --fg: oklch(from var(--editor-bg) calc(l + var(--contrast)) c h);
+  --page-bg: oklch(from var(--editor-bg) calc(l - 0.05) c h);
+  --fg-muted: var(--named-arg);
+  --keyword: oklch(calc(0.5 + var(--contrast) / 10) var(--base-chroma) var(--main-hue));
+  --function-decl: oklch(from var(--keyword) calc(l + 0.15) c h);
+  --constant-field: oklch(from var(--keyword) calc(l + 0.1) calc(c + 0.04) h);
+  --number: oklch(from var(--keyword) l c calc(h + var(--comp-offset)));
+  --string: oklch(from var(--keyword) l calc(c - 0.03) calc(h - var(--comp-offset)));
+  --named-arg: oklch(from var(--keyword) calc(l + 0.1) calc(c - 0.05) h);
+  --error: oklch(from var(--keyword) l calc(c + 0.05) var(--red-hue));
+  --todo: oklch(from var(--string) calc(l + 0.2) calc(c + 0.09) h);
+
+  /* the room and the cabinet */
+  --room: oklch(from var(--page-bg) calc(l - 0.065) calc(c - 0.003) h);
+  --room-lamp: oklch(from var(--editor-bg) calc(l + 0.005) c h);
+  --case: oklch(from var(--page-bg) calc(l + 0.005) c h);
+
+  /* the faceplate and the key caps, all from the editor background */
+  --plate: var(--editor-bg);
+  --plate-sheen: oklch(from var(--editor-bg) calc(l + 0.025) c h);
+  --cap-top: oklch(from var(--editor-bg) calc(l + 0.11) c h);
+  --cap-bottom: oklch(from var(--editor-bg) calc(l + 0.07) c h);
+  --cap-hover-top: oklch(from var(--editor-bg) calc(l + 0.14) c h);
+  --cap-hover-bottom: oklch(from var(--editor-bg) calc(l + 0.09) c h);
+  --cap-pressed: oklch(from var(--editor-bg) calc(l + 0.05) c h);
+  --cap-side: oklch(from var(--editor-bg) calc(l - 0.035) c h);
+  --cap-deep: oklch(from var(--editor-bg) calc(l - 0.08) c h);
+  --cap-edge: oklch(from var(--editor-bg) calc(l - 0.075) c h);
+  --slot: oklch(from var(--page-bg) calc(l - 0.05) c h);
+  --ink: oklch(from var(--fg) calc(l + 0.1) c h);
+  --ink-soft: var(--fg);
+  --ink-faint: oklch(from var(--fg) calc(l - 0.1) c h);
+  --label: var(--fg-muted);
+
+  /* the glass and what glows on it */
+  --glass-top: oklch(from var(--page-bg) calc(l - 0.075) c h);
+  --glass-bottom: oklch(from var(--page-bg) calc(l - 0.035) calc(c + 0.004) h);
+  --glow: var(--function-decl);
+  --print: oklch(from var(--function-decl) calc(l + 0.02) calc(c - 0.03) h);
+  --display: oklch(from var(--function-decl) calc(l + 0.12) calc(c + 0.02) h);
+  --readout: oklch(from var(--fg) calc(l + 0.12) calc(c + 0.02) h);
+  --trace: var(--todo);
+  --pointer: oklch(from var(--error) calc(l + 0.13) calc(c + 0.03) h);
+
+  /* lamps: fresh, recent, old follow the palette's green, number and string */
+  --lamp-h: oklch(from var(--constant-field) calc(l + 0.1) c h);
+  --lamp-d: oklch(from var(--number) calc(l + 0.17) calc(c + 0.01) h);
+  --lamp-M: oklch(from var(--string) calc(l + 0.12) c h);
+  --lamp-off: oklch(from var(--editor-bg) calc(l + 0.05) c h);
+  --ink-h: oklch(from var(--constant-field) calc(l + 0.05) c h);
+  --ink-d: oklch(from var(--number) calc(l + 0.15) c h);
+  --ink-M: oklch(from var(--string) calc(l + 0.12) c h);
+
+  /* latched keys light up in the accent green */
+  --lit: var(--constant-field);
+  --lit-hi: oklch(from var(--constant-field) calc(l + 0.12) calc(c - 0.03) h);
+  --lit-lo: var(--keyword);
+  --lit-side: oklch(from var(--keyword) calc(l - 0.15) calc(c - 0.03) h);
+  --on-lit: oklch(from var(--editor-bg) calc(l - 0.08) calc(c + 0.03) h);
+  --danger: var(--error);
+  --danger-text: oklch(from var(--error) calc(l + 0.17) calc(c - 0.04) h);
+  --focus: var(--function-decl);
+
+  --sans: "Barlow", system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  --narrow: "Barlow Semi Condensed", "Barlow", system-ui, sans-serif;
+  --legend: "Michroma", "Barlow", system-ui, sans-serif;
+  --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+
+  /* a latching key: bevelled cap, visible side, cast shadow */
+  --key-up: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 var(--cap-side), 0 2px 0 var(--cap-side),
+    0 3px 0 var(--cap-side), 0 4px 0 var(--cap-deep), 0 5px 7px rgba(0, 0, 0, 0.45);
+  --key-down: inset 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 0 var(--cap-deep), 0 1px 2px rgba(0, 0, 0, 0.5);
+  --well: inset 0 2px 5px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.06);
+  --groove: rgba(0, 0, 0, 0.4);
+  --groove-hi: rgba(255, 255, 255, 0.04);
+  --engrave: 0 -1px 0 rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: radial-gradient(ellipse 90% 60% at 50% -8%, var(--room-lamp), transparent 70%), var(--room);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 100%;
+  line-height: 1.5;
+  overflow-y: scroll;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  padding: 2.25rem 1.5rem 4rem;
+}
+
+a {
+  color: var(--ink);
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- the cabinet ---------- */
+
+.receiver {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 12px 14px;
+  border-radius: 9px;
+  /* a dark matte cabinet; the walnut only shows as a hint of grain under the finish */
+  background: linear-gradient(rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0) 10px),
+    linear-gradient(oklch(from var(--case) l c h / 0.93), oklch(from var(--case) l c h / 0.95)), url("../tex/walnut.svg"), var(--case);
+  background-size: auto, auto, 240px 900px, auto;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.03), 0 30px 60px -20px rgba(0, 0, 0, 0.8),
+    0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* pages without the dial are a smaller unit in the same cabinet style */
+.receiver:has(main > :is(.form-page, .settings, .posts-page, .error-page, .intro)) {
+  max-width: 54rem;
+}
+
+.faceplate {
+  position: relative;
+  padding: 1.5rem 2.25rem 2.75rem;
+  border-radius: 4px;
+  /* satin powder coat: one soft sheen from above, no brushing */
+  background: linear-gradient(var(--plate-sheen), var(--plate) 180px);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- header: wordmark, band keys, actions ---------- */
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+  padding-bottom: 1.25rem;
+}
+
+.brand {
+  font-family: var(--legend);
+  font-size: 1.3rem;
+  letter-spacing: 0.22em;
+  color: var(--ink);
+  text-decoration: none;
+  text-shadow: var(--engrave);
+}
+
+.brand:hover {
+  color: var(--readout);
+}
+
+/* a small indicator window, like the stereo lamp on a receiver */
+.live {
+  margin-left: -1.1rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 3px;
+  background: linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: var(--well);
+  color: var(--lamp-off);
+  font: 0.6rem/1.3 var(--legend);
+  letter-spacing: 0.08em;
+  transition: color 0.4s, text-shadow 0.4s;
+}
+
+.on-air .live {
+  color: var(--lamp-h);
+  text-shadow: 0 0 6px oklch(from var(--lamp-h) l c h / 0.8);
+}
+
+.tags {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.tags ul,
+.tiers ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* cassette-deck piano keys in a housing; a latched key drops behind the housing lip */
+.tags ul {
+  display: flex;
+  position: relative;
+  gap: 3px;
+  padding: 3px 3px 0;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(oklch(from var(--editor-bg) calc(l - 0.07) c h), oklch(from var(--editor-bg) calc(l - 0.03) c h));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.tags ul::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  height: 10px;
+  background: linear-gradient(oklch(from var(--editor-bg) calc(l + 0.06) c h), var(--plate) 40%);
+  box-shadow: 0 -1px 0 oklch(from var(--editor-bg) calc(l + 0.1) c h), 0 -4px 6px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.tag {
+  position: relative;
+}
+
+/* the freshness lamp in each key's corner, riding down with it */
+.tag::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 1;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  transition: transform 0.09s ease-out;
+  background: radial-gradient(circle at 40% 35%, var(--lamp-off), var(--cap-deep) 70%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+.tag.age-h::before {
+  background: radial-gradient(circle at 40% 35%, oklch(from var(--lamp-h) calc(l + 0.15) calc(c - 0.08) h), var(--lamp-h) 45%, var(--keyword));
+  box-shadow: 0 0 5px 1px oklch(from var(--lamp-h) l c h / 0.75), 0 0 12px oklch(from var(--lamp-h) l c h / 0.35);
+}
+
+.tag.age-d::before {
+  background: radial-gradient(circle at 40% 35%, oklch(from var(--lamp-d) calc(l + 0.15) calc(c - 0.06) h), var(--lamp-d) 45%, var(--number));
+  box-shadow: 0 0 5px 1px oklch(from var(--lamp-d) l c h / 0.7), 0 0 12px oklch(from var(--lamp-d) l c h / 0.3);
+}
+
+/* ---------- keys ---------- */
+
+.actions a,
+.sort button,
+button,
+.button,
+.controls .edit,
+input[type="file"]::file-selector-button {
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  padding: 0.35rem 0.95rem;
+  border: 1px solid var(--cap-edge);
+  border-radius: 3px;
+  background: linear-gradient(var(--cap-top), var(--cap-bottom));
+  box-shadow: var(--key-up);
+  color: var(--ink);
+  font: 500 0.95rem/1.25 var(--sans);
+  text-decoration: none;
+  text-shadow: none;
+  cursor: pointer;
+  transition: transform 0.07s ease-out, box-shadow 0.07s ease-out, background 0.07s;
+  user-select: none;
+}
+
+.actions a:hover,
+.sort button:hover,
+button:hover,
+.button:hover,
+.controls .edit:hover {
+  background: linear-gradient(var(--cap-hover-top), var(--cap-hover-bottom));
+  color: var(--readout);
+}
+
+/* real travel: the cap drops the depth of its side */
+.actions a:active,
+.sort button:active,
+button:active,
+.button:active,
+.controls .edit:active,
+input[type="file"]::file-selector-button:active {
+  transform: translateY(4px);
+  box-shadow: var(--key-down);
+  background: var(--cap-pressed);
+}
+
+/* latched keys stay down and light up from behind */
+.sort button.selected,
+button.primary,
+.button.primary {
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, var(--lit-hi), var(--lit) 65%, var(--lit-lo));
+  border-color: var(--lit-side);
+  color: var(--on-lit);
+  text-shadow: 0 1px 0 oklch(from var(--lit-hi) l c h / 0.5);
+}
+
+.sort button.selected {
+  transform: translateY(3px);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 10px oklch(from var(--lit-hi) l c h / 0.5), 0 1px 0 var(--cap-deep),
+    0 0 14px 2px oklch(from var(--lit) l c h / 0.35);
+}
+
+button.primary,
+.button.primary {
+  box-shadow: inset 0 1px 0 oklch(from var(--lit-hi) l c h / 0.8), 0 1px 0 var(--lit-side), 0 2px 0 var(--lit-side), 0 3px 0 var(--lit-side),
+    0 4px 0 var(--cap-deep), 0 6px 7px rgba(0, 0, 0, 0.45), 0 0 16px oklch(from var(--lit) l c h / 0.25);
+  font-weight: 600;
+}
+
+button.primary:hover,
+.button.primary:hover {
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, oklch(from var(--lit-hi) calc(l + 0.06) c h), var(--lit-hi) 60%, var(--lit));
+}
+
+button.primary:active,
+.button.primary:active {
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, var(--lit), var(--lit-lo));
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 0 var(--cap-deep), 0 0 10px oklch(from var(--lit) l c h / 0.25);
+}
+
+button.danger {
+  background: linear-gradient(oklch(from var(--error) calc(l + 0.07) c h), var(--error) 60%, oklch(from var(--error) calc(l - 0.07) c h));
+  border-color: oklch(from var(--error) calc(l - 0.25) c h);
+  color: oklch(0.97 0.01 var(--red-hue));
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 0 oklch(from var(--error) calc(l - 0.2) c h),
+    0 2px 0 oklch(from var(--error) calc(l - 0.2) c h), 0 3px 0 oklch(from var(--error) calc(l - 0.2) c h),
+    0 4px 0 var(--cap-deep), 0 6px 7px rgba(0, 0, 0, 0.45);
+}
+
+button.danger:hover {
+  background: linear-gradient(oklch(from var(--error) calc(l + 0.1) c h), oklch(from var(--error) calc(l + 0.03) c h) 60%, var(--error));
+  color: #fff;
+}
+
+button:disabled {
+  cursor: progress;
+  filter: saturate(0.6) brightness(0.92);
+}
+
+.tag a {
+  --k-top: oklch(from var(--editor-bg) calc(l + 0.14) c h);
+  --k-mid: oklch(from var(--editor-bg) calc(l + 0.1) c h);
+  --k-edge: oklch(from var(--editor-bg) calc(l + 0.18) c h);
+  --k-front: oklch(from var(--editor-bg) calc(l + 0.03) c h);
+  --k-foot: oklch(from var(--editor-bg) calc(l - 0.03) c h);
+  display: grid;
+  place-items: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  padding: 0 0 22px;
+  border-radius: 2px 2px 0 0;
+  /* flat top face, a bright bevel, then the angled front face */
+  background: linear-gradient(var(--k-top), var(--k-mid) 62%, var(--k-edge) 62.5%, var(--k-front) 64.5%, var(--k-foot));
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.05), inset -1px 0 0 rgba(0, 0, 0, 0.3);
+  font-family: var(--emoji);
+  font-size: 1.35rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.09s ease-out;
+  user-select: none;
+}
+
+.tag a:hover {
+  --k-top: oklch(from var(--editor-bg) calc(l + 0.17) c h);
+  --k-mid: oklch(from var(--editor-bg) calc(l + 0.12) c h);
+}
+
+.tag a:active,
+.tag.active a {
+  --k-top: oklch(from var(--editor-bg) calc(l + 0.11) c h);
+  --k-mid: oklch(from var(--editor-bg) calc(l + 0.08) c h);
+  transform: translateY(11px);
+}
+
+.tag.active::before {
+  transform: translateY(11px);
+}
+
+.tag a .face {
+  filter: saturate(0.85);
+}
+
+.tag.active a .face {
+  filter: none;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.tags ~ .actions {
+  margin-left: 0;
+}
+
+.actions a {
+  height: 2.6rem;
+}
+
+.actions .add {
+  font-weight: 600;
+}
+
+.actions .add span[aria-hidden] {
+  margin-right: 0.15em;
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+/* ---------- the tuning dial ---------- */
+
+.bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "dial tiers"
+    "lamps sort";
+  gap: 1.1rem 2.25rem;
+  align-items: center;
+}
+
+.dial {
+  grid-area: dial;
+  position: relative;
+  margin: 6px;
+  padding: 0.85rem 1.5rem 0.7rem;
+  border-radius: 5px;
+  background: radial-gradient(ellipse 60% 55% at 50% 78%, oklch(from var(--glow) l c h / 0.14), transparent 70%),
+    radial-gradient(ellipse 90% 120% at 50% 135%, oklch(from var(--glow) l c h / 0.22), transparent 70%),
+    radial-gradient(ellipse 40% 90% at 6% 120%, oklch(from var(--lamp-d) l c h / 0.08), transparent 70%),
+    linear-gradient(var(--glass-top), var(--glass-bottom) 55%, var(--glass-top));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.8), 0 0 0 5px var(--slot), 0 1px 0 5px rgba(255, 255, 255, 0.07),
+    inset 0 10px 18px rgba(0, 0, 0, 0.75), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  color: var(--readout);
+}
+
+/* the glass pane's reflection sits above everything printed on it */
+.dial::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(174deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.025) 42%, rgba(255, 255, 255, 0) 42.3%);
+  pointer-events: none;
+}
+
+.dial-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.tag-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--display);
+  font: 600 1.55rem/1.1 var(--narrow);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 10px oklch(from var(--glow) l c h / 0.5), 0 0 2px oklch(from var(--display) l c h / 0.5);
+  white-space: nowrap;
+}
+
+.tag-emoji {
+  font-family: var(--emoji);
+  font-size: 1.3rem;
+  filter: drop-shadow(0 0 6px oklch(from var(--glow) l c h / 0.4));
+}
+
+.readout {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--readout);
+  font: 500 0.95rem/1.2 var(--sans);
+  text-align: right;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 8px oklch(from var(--readout) l c h / 0.3);
+  white-space: nowrap;
+}
+
+.readout .when {
+  margin-left: 0.6em;
+  color: var(--print);
+  font-family: var(--narrow);
+  font-weight: 600;
+}
+
+.readout.age-h .when {
+  color: var(--lamp-h);
+}
+
+.readout.age-d .when {
+  color: var(--lamp-d);
+}
+
+.scale {
+  position: relative;
+  height: 5.25rem;
+  margin-top: 0.4rem;
+}
+
+/* the printed graduations: minor ticks every 2%, a baseline under the stations */
+.scale::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.25rem;
+  height: 9px;
+  border-bottom: 1px solid oklch(from var(--print) l c h / 0.7);
+  background: repeating-linear-gradient(90deg, oklch(from var(--print) l c h / 0.55) 0 1px, transparent 1px 2%);
+  opacity: 0.8;
+}
+
+.stations {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 1.25rem;
+  width: 100%;
+  height: calc(100% - 1.25rem);
+  overflow: visible;
+  filter: drop-shadow(0 0 3px oklch(from var(--glow) l c h / 0.35));
+}
+
+.station {
+  stroke: var(--lamp-M);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.55;
+  transition: opacity 0.3s, stroke-width 0.3s;
+}
+
+.station.age-h {
+  stroke: var(--lamp-h);
+  opacity: 0.85;
+}
+
+.station.age-d {
+  stroke: var(--lamp-d);
+  opacity: 0.75;
+}
+
+.station.tuned {
+  stroke: var(--readout);
+  stroke-width: 3.5;
+  opacity: 1;
+}
+
+.marks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--print);
+  font: 0.62rem/1.1rem var(--legend);
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 6px oklch(from var(--glow) l c h / 0.5);
+}
+
+.marks li {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+.marks li::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.15rem);
+  width: 1px;
+  height: 14px;
+  background: var(--print);
+}
+
+.m-1y {
+  left: 0;
+  transform: none !important;
+}
+
+.m-1y::before {
+  left: 0 !important;
+}
+
+.m-3mo {
+  left: 15.3%;
+}
+
+.m-1mo {
+  left: 27.5%;
+}
+
+.m-1w {
+  left: 43.5%;
+}
+
+.m-1d {
+  left: 64.5%;
+}
+
+.m-1h {
+  left: 92.4%;
+}
+
+.m-now {
+  left: 100%;
+  transform: translateX(-100%) !important;
+}
+
+.m-now::before {
+  left: auto !important;
+  right: 0;
+}
+
+/* the tuning pointer: parked left until app.js tunes it to a station */
+.needle {
+  position: absolute;
+  top: -0.3rem;
+  bottom: 1.05rem;
+  left: calc(var(--needle, 0) * 1%);
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: linear-gradient(oklch(from var(--pointer) calc(l + 0.15) calc(c - 0.08) h), var(--pointer) 30%, oklch(from var(--pointer) calc(l - 0.08) c h));
+  box-shadow: 0 0 6px 1px oklch(from var(--pointer) l c h / 0.85), 0 0 20px 2px oklch(from var(--pointer) l c h / 0.35);
+  transition: left 0.55s cubic-bezier(0.22, 0.9, 0.25, 1);
+  pointer-events: none;
+}
+
+.dial.sweep .needle {
+  transition-duration: 1.2s;
+  transition-timing-function: cubic-bezier(0.3, 0, 0.1, 1);
+}
+
+/* ---------- importance selector ---------- */
+
+.tiers {
+  grid-area: tiers;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding-right: 0.25rem;
+  --i: 1;
+  --n: 1;
+}
+
+.tiers:has(.tier:nth-child(2).active) { --i: 2; }
+.tiers:has(.tier:nth-child(3).active) { --i: 3; }
+.tiers:has(.tier:nth-child(4).active) { --i: 4; }
+.tiers:has(.tier:nth-child(5).active) { --i: 5; }
+.tiers:has(.tier:nth-child(2):last-child) { --n: 2; }
+.tiers:has(.tier:nth-child(3):last-child) { --n: 3; }
+.tiers:has(.tier:nth-child(4):last-child) { --n: 4; }
+.tiers:has(.tier:nth-child(5):last-child) { --n: 5; }
+
+.mount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.mount .legend {
+  margin: 0;
+}
+
+/* knurled skirt, spun aluminium cap, and an engraved pointer that turns */
+.knob {
+  position: relative;
+  flex: none;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.35) 71%),
+    repeating-conic-gradient(var(--cap-deep) 0 2.5deg, var(--cap-top) 3.5deg 5deg, var(--cap-deep) 6deg);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.55), 0 2px 3px rgba(0, 0, 0, 0.45);
+}
+
+.knob::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: conic-gradient(from 25deg, var(--cap-bottom), var(--cap-hover-top) 12%, var(--cap-pressed) 25%, var(--cap-top) 38%,
+      var(--cap-bottom) 50%, var(--cap-hover-top) 62%, var(--cap-pressed) 75%, var(--cap-top) 88%, var(--cap-bottom));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 -1px 1px rgba(0, 0, 0, 0.35) inset, 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+.knob::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: linear-gradient(var(--slot), var(--slot)) no-repeat right 5px center / 17px 3px,
+    radial-gradient(circle, var(--lit-hi) 0 1px, var(--lit) 1.5px 2.5px, rgba(0, 0, 0, 0) 3px) no-repeat right 1px center / 6px 6px;
+  transform: rotate(calc((var(--i) - (var(--n) + 1) / 2) * 24deg));
+  transition: transform 0.28s cubic-bezier(0.34, 1.5, 0.5, 1);
+}
+
+.tiers ul {
+  display: flex;
+  flex-direction: column;
+  min-width: 11rem;
+}
+
+.tier a {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 1.7rem;
+  padding: 0 0.25rem;
+  color: var(--ink-soft);
+  font-weight: 500;
+  text-decoration: none;
+  text-shadow: var(--engrave);
+}
+
+/* each position has its own indicator lamp, like FM or Phono on a receiver */
+.tier a::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--lamp-off), var(--cap-deep) 70%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.tier a > span[aria-hidden] {
+  font-family: var(--emoji);
+  font-size: 0.95rem;
+  filter: grayscale(1) contrast(0.9);
+  opacity: 0.5;
+}
+
+.tier a:hover {
+  color: var(--ink);
+}
+
+.tier a:hover > span[aria-hidden] {
+  opacity: 0.85;
+}
+
+.tier.active a {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tier.active a::before {
+  background: radial-gradient(circle at 40% 35%, oklch(from var(--lit) calc(l + 0.2) calc(c - 0.1) h), var(--lit-hi) 45%, var(--lit));
+  box-shadow: 0 0 5px 1px oklch(from var(--lit) l c h / 0.85), 0 0 12px oklch(from var(--lit) l c h / 0.4);
+}
+
+.tier.active a > span[aria-hidden] {
+  filter: none;
+  opacity: 1;
+}
+
+.count {
+  margin-left: auto;
+  padding-left: 0.75rem;
+  color: var(--ink-faint);
+  font: 600 0.85rem var(--narrow);
+  font-variant-numeric: tabular-nums;
+}
+
+/* what the channel lamps mean */
+.lamps {
+  grid-area: lamps;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.3rem;
+  margin: 0 0 0 0.9rem;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  text-shadow: var(--engrave);
+}
+
+.lamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.lamp::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.lamp.age-h::before {
+  background: radial-gradient(circle at 40% 35%, oklch(from var(--lamp-h) calc(l + 0.15) calc(c - 0.08) h), var(--lamp-h) 45%, var(--keyword));
+  box-shadow: 0 0 5px 1px oklch(from var(--lamp-h) l c h / 0.7);
+}
+
+.lamp.age-d::before {
+  background: radial-gradient(circle at 40% 35%, oklch(from var(--lamp-d) calc(l + 0.15) calc(c - 0.06) h), var(--lamp-d) 45%, var(--number));
+  box-shadow: 0 0 5px 1px oklch(from var(--lamp-d) l c h / 0.65);
+}
+
+.lamp.age-M::before {
+  background: radial-gradient(circle at 40% 35%, var(--lamp-M), var(--string) 55%, oklch(from var(--string) calc(l - 0.2) c h));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- sort keys ---------- */
+
+.sort {
+  grid-area: sort;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem 0.4rem;
+}
+
+.sort .label,
+.legend {
+  margin-right: 0.5rem;
+  color: var(--label);
+  font: 0.68rem var(--legend);
+  letter-spacing: 0.08em;
+  text-shadow: var(--engrave);
+}
+
+.sort button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+/* ---------- channels ---------- */
+
+.follows {
+  margin: 1.1rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--groove);
+  box-shadow: inset 0 1px 0 var(--groove-hi);
+  list-style: none;
+}
+
+.follow {
+  position: relative;
+  padding: 0.7rem 0.25rem 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--groove);
+  box-shadow: 0 1px 0 var(--groove-hi);
+  scroll-margin-top: 1rem;
+}
+
+/* the channel the dial is tuned to gets the needle's colour at its edge */
+.follow::before {
+  content: "";
+  position: absolute;
+  top: 0.95rem;
+  left: -0.15rem;
+  width: 4px;
+  height: 1.45rem;
+  border-radius: 2px;
+  background: linear-gradient(oklch(from var(--pointer) calc(l + 0.15) calc(c - 0.08) h), var(--pointer) 30%, oklch(from var(--pointer) calc(l - 0.08) c h));
+  box-shadow: 0 0 6px 1px oklch(from var(--pointer) l c h / 0.75);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.follow.tuned::before {
+  opacity: 1;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.7rem;
+  min-width: 0;
+}
+
+/* freshness lamp */
+.head::before {
+  content: "";
+  order: -1;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--lamp-off), var(--cap-deep) 70%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.head.age-h::before {
+  background: radial-gradient(circle at 40% 35%, oklch(from var(--lamp-h) calc(l + 0.15) calc(c - 0.08) h), var(--lamp-h) 45%, var(--keyword));
+  box-shadow: 0 0 6px 1px oklch(from var(--lamp-h) l c h / 0.8), 0 0 14px oklch(from var(--lamp-h) l c h / 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.head.age-d::before {
+  background: radial-gradient(circle at 40% 35%, oklch(from var(--lamp-d) calc(l + 0.15) calc(c - 0.06) h), var(--lamp-d) 45%, var(--number));
+  box-shadow: 0 0 6px 1px oklch(from var(--lamp-d) l c h / 0.75), 0 0 14px oklch(from var(--lamp-d) l c h / 0.3), inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.head.age-M::before {
+  background: radial-gradient(circle at 40% 35%, var(--lamp-M), var(--string) 55%, oklch(from var(--string) calc(l - 0.2) c h));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* the expand toggle: a round cap that latches down, lights, and turns a quarter */
+.toggle {
+  order: -2;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, var(--cap-hover-top), var(--cap-top) 60%, var(--cap-bottom));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 1px var(--cap-edge), 0 2px 0 1px var(--cap-side),
+    0 3px 0 1px var(--cap-deep), 0 5px 6px rgba(0, 0, 0, 0.45);
+  color: var(--ink-soft);
+  transition: transform 0.12s cubic-bezier(0.34, 1.6, 0.5, 1), box-shadow 0.12s, background 0.12s;
+}
+
+.toggle svg {
+  transition: transform 0.26s cubic-bezier(0.34, 1.7, 0.5, 1);
+}
+
+.toggle:hover {
+  color: var(--readout);
+}
+
+.toggle:active {
+  transform: translateY(3px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--cap-edge), 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.toggle[aria-expanded="true"] {
+  transform: translateY(2px);
+  background: radial-gradient(circle at 50% 40%, var(--lit-hi), var(--lit) 60%, var(--lit-lo));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--lit-side), 0 1px 0 1px var(--cap-deep),
+    0 0 12px 2px oklch(from var(--lit) l c h / 0.35);
+  color: var(--on-lit);
+}
+
+.toggle[aria-expanded="true"] svg {
+  transform: rotate(90deg);
+}
+
+.head .title {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  text-shadow: var(--engrave);
+  white-space: nowrap;
+}
+
+.head a.title:hover {
+  text-decoration: underline;
+}
+
+.head.age-M .title {
+  color: var(--ink-soft);
+}
+
+/* the age is a little backlit readout set into the metal */
+.head .age {
+  flex: none;
+  padding: 0.05rem 0.45rem;
+  border-radius: 3px;
+  background: linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: var(--well);
+  color: var(--lamp-M);
+  font: 600 0.82rem/1.35 var(--narrow);
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 6px currentColor;
+}
+
+.head.age-h .age {
+  color: var(--lamp-h);
+}
+
+.head.age-d .age {
+  color: var(--lamp-d);
+}
+
+.head.age-M .age {
+  text-shadow: none;
+}
+
+/* the activity trace, drawn on a small scope window */
+.scope {
+  order: 5;
+  display: inline-flex;
+  flex: none;
+  margin-left: auto;
+  padding: 4px 6px;
+  border-radius: 3px;
+  background: linear-gradient(oklch(from var(--glow) l c h / 0.08) 1px, transparent 1px) 0 3px / 100% 6px,
+    linear-gradient(90deg, oklch(from var(--glow) l c h / 0.08) 1px, transparent 1px) 5px 0 / 12px 100%,
+    linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: var(--well);
+}
+
+.spark {
+  display: block;
+  overflow: visible;
+}
+
+.spark polyline {
+  fill: none;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.spark polygon {
+  stroke: none;
+}
+
+.spark-recent {
+  filter: drop-shadow(0 0 2px oklch(from var(--trace) l c h / 0.8));
+}
+
+.spark-recent polyline {
+  stroke: var(--trace);
+}
+
+.spark-recent polygon {
+  fill: oklch(from var(--trace) l c h / 0.16);
+}
+
+.spark-old polyline {
+  stroke: var(--print);
+}
+
+.spark-old polygon {
+  fill: oklch(from var(--print) l c h / 0.1);
+}
+
+.error {
+  position: relative;
+  order: 4;
+  display: inline-grid;
+  place-items: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--danger-text), var(--pointer) 45%, var(--error));
+  box-shadow: 0 0 6px 1px oklch(from var(--pointer) l c h / 0.6), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: help;
+}
+
+.error-text {
+  display: none;
+  position: absolute;
+  top: 1.7rem;
+  left: -0.75rem;
+  z-index: 3;
+  width: max-content;
+  max-width: min(28rem, 80vw);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  background: linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: 0 0 0 1px #000, 0 0 0 3px var(--slot), 0 10px 20px rgba(0, 0, 0, 0.5);
+  color: var(--danger-text);
+  font: 500 0.85rem/1.4 var(--sans);
+  text-shadow: 0 0 6px oklch(from var(--pointer) l c h / 0.3);
+  white-space: normal;
+}
+
+.error:hover .error-text,
+.error:focus .error-text,
+.error:focus-within .error-text {
+  display: block;
+}
+
+.fetching {
+  order: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--glow);
+  font: 600 0.8rem var(--narrow);
+}
+
+.fetching::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--glow);
+  box-shadow: 0 0 6px 1px oklch(from var(--glow) l c h / 0.8);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.controls {
+  order: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.scope ~ .controls {
+  margin-left: 0.5rem;
+}
+
+.controls form {
+  display: inline;
+  margin: 0;
+}
+
+.controls .edit,
+.controls .link {
+  padding: 0.12rem 0.55rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  --key-up: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 var(--cap-side), 0 2px 0 var(--cap-side),
+    0 3px 0 var(--cap-deep), 0 4px 5px rgba(0, 0, 0, 0.45);
+}
+
+.controls .edit:active,
+.controls .link:active {
+  transform: translateY(3px);
+}
+
+/* the edit key stays latched while its drawer is out */
+.follow:has(.posts[data-open="edit"]:not(:empty)) .controls .edit {
+  transform: translateY(3px);
+  border-color: var(--lit-side);
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, var(--lit-hi), var(--lit) 65%, var(--lit-lo));
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 0 var(--cap-deep), 0 0 10px 1px oklch(from var(--lit) l c h / 0.35);
+  color: var(--on-lit);
+}
+
+/* latest posts, on one line like Fraidycat */
+.latest {
+  margin: 0.4rem 0 0;
+  padding: 0 0 0 3.25rem;
+  overflow: hidden;
+  list-style: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.latest .post {
+  display: inline;
+}
+
+.latest .post + .post::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 0.85em;
+  margin: 0 0.75em 0 0.6em;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.08);
+  vertical-align: -0.05em;
+}
+
+.post a,
+.post .text {
+  color: var(--ink-soft);
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+.post a:visited {
+  color: oklch(from var(--fg) calc(l - 0.13) calc(c - 0.01) h);
+}
+
+.post a:hover {
+  text-decoration: underline;
+}
+
+.post .age {
+  margin-left: 0.4rem;
+  color: var(--ink-M);
+  font: 600 0.8rem var(--narrow);
+  font-variant-numeric: tabular-nums;
+}
+
+.post.age-h .age {
+  color: var(--ink-h);
+}
+
+.post.age-d .age {
+  color: var(--ink-d);
+}
+
+/* ---------- the drawer under a channel: recent posts or the edit form ---------- */
+
+.posts:empty {
+  display: none;
+}
+
+/* the drawer's list replaces the one-line summary while it is out */
+.follow:has(.posts[data-open="posts"]:not(:empty)) .latest {
+  display: none;
+}
+
+.posts {
+  margin: 0.8rem 0 0.1rem 3.25rem;
+  padding: 0.9rem 1.2rem 1rem;
+  border-radius: 5px;
+  background: linear-gradient(var(--case), oklch(from var(--case) calc(l + 0.02) c h) 40%);
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.posts > * {
+  animation: slide-out 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes slide-out {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.recent {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent .post {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--groove);
+  box-shadow: 0 1px 0 var(--groove-hi);
+}
+
+.recent .post:last-child {
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.recent .post .age {
+  flex: none;
+}
+
+.post-list > p {
+  margin: 0.75rem 0 0;
+}
+
+/* ---------- pages with a readout: add, edit, settings, posts, error ---------- */
+
+.form-page,
+.settings,
+.posts-page,
+.error-page,
+.edit-box {
+  max-width: 44rem;
+}
+
+.form-page > h1,
+.settings > h1,
+.posts-page > h1,
+.error-page > h1,
+.intro > h1 {
+  position: relative;
+  margin: 6px 6px 1.75rem;
+  padding: 0.9rem 1.4rem;
+  border-radius: 5px;
+  background: radial-gradient(ellipse 70% 140% at 50% 150%, oklch(from var(--glow) l c h / 0.2), transparent 70%),
+    linear-gradient(var(--glass-top), var(--glass-bottom) 55%, var(--glass-top));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.8), 0 0 0 5px var(--slot), 0 1px 0 5px rgba(255, 255, 255, 0.07),
+    inset 0 8px 14px rgba(0, 0, 0, 0.75);
+  color: var(--display);
+  font: 600 1.6rem/1.2 var(--narrow);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 10px oklch(from var(--glow) l c h / 0.5), 0 0 2px oklch(from var(--display) l c h / 0.5);
+  overflow-wrap: anywhere;
+}
+
+.form-page > h1::after,
+.settings > h1::after,
+.posts-page > h1::after,
+.error-page > h1::after,
+.intro > h1::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(174deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0) 45.3%);
+  pointer-events: none;
+}
+
+.posts-page > h1 a {
+  color: inherit;
+}
+
+.settings h2 {
+  margin: 2.25rem 0 0.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--groove);
+  box-shadow: inset 0 1px 0 var(--groove-hi);
+  color: var(--label);
+  font: 0.82rem var(--legend);
+  letter-spacing: 0.08em;
+  text-shadow: var(--engrave);
+}
+
+.settings h1 + h2,
+.settings .flash + h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+  box-shadow: none;
+}
+
+.settings p,
+.form-page p,
+.error-page p,
+.posts-page p {
+  max-width: 38rem;
+}
+
+/* ---------- forms ---------- */
+
+label {
+  display: block;
+  margin: 1.1rem 0 0.4rem;
+  color: var(--label);
+  font: 0.7rem var(--legend);
+  letter-spacing: 0.07em;
+  text-shadow: var(--engrave);
+}
+
+.optional {
+  color: var(--ink-faint);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  letter-spacing: 0;
+}
+
+/* entry fields are small glass windows */
+input:not([type="checkbox"], [type="radio"], [type="file"], [type="hidden"]),
+select {
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border: 0;
+  border-radius: 4px;
+  background: linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.6), 0 1px 0 1px rgba(255, 255, 255, 0.06);
+  color: var(--readout);
+  caret-color: var(--glow);
+  font: 500 1rem/1.4 var(--sans);
+  text-shadow: none;
+}
+
+input::placeholder {
+  color: oklch(from var(--fg) l c h / 0.4);
+  text-shadow: none;
+}
+
+input:not([type="checkbox"], [type="radio"], [type="file"]):focus,
+select:focus {
+  outline: none;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 0 1px #000, 0 0 0 3px var(--focus), 0 0 14px oklch(from var(--focus) l c h / 0.4);
+}
+
+select option {
+  background: var(--glass-bottom);
+  color: var(--readout);
+}
+
+.add-form #add-url {
+  padding: 0.8rem 1rem;
+  font-size: 1.15rem;
+}
+
+.hint {
+  margin: 0.4rem 0 0;
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+}
+
+.buttons > a {
+  color: var(--ink-soft);
+}
+
+button.link {
+  font-size: 0.8rem;
+}
+
+/* radios and checkboxes are small latching buttons with a lamp */
+input[type="radio"],
+input[type="checkbox"] {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin: 0;
+  border: 1px solid var(--cap-edge);
+  border-radius: 3px;
+  background: linear-gradient(var(--cap-top), var(--cap-bottom));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 var(--cap-side), 0 2px 0 var(--cap-side), 0 3px 0 var(--cap-deep),
+    0 4px 5px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  transition: transform 0.07s, box-shadow 0.07s;
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+input[type="radio"]::after,
+input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  inset: 0.38rem;
+  border-radius: 50%;
+  background: var(--cap-deep);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+input[type="radio"]:checked,
+input[type="checkbox"]:checked {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 0 var(--cap-deep), 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+input[type="radio"]:checked::after,
+input[type="checkbox"]:checked::after {
+  background: radial-gradient(circle at 40% 35%, oklch(from var(--lit) calc(l + 0.2) calc(c - 0.1) h), var(--lit-hi) 45%, var(--lit));
+  box-shadow: 0 0 5px 1px oklch(from var(--lit) l c h / 0.85);
+}
+
+label.radio {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0.55rem 0;
+  color: var(--ink);
+  font: 500 1rem var(--sans);
+  letter-spacing: 0;
+}
+
+input[type="file"] {
+  max-width: 100%;
+  color: var(--ink-soft);
+  font: 500 0.9rem var(--sans);
+}
+
+input[type="file"]::file-selector-button {
+  display: inline-block;
+  margin-right: 0.9rem;
+}
+
+.candidates {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.candidates li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--groove);
+  box-shadow: 0 1px 0 var(--groove-hi);
+}
+
+.candidates input[type="checkbox"] {
+  margin-top: 0.15rem;
+}
+
+.candidates label {
+  margin: 0;
+  color: var(--ink);
+  font: 500 1rem/1.4 var(--sans);
+  letter-spacing: 0;
+}
+
+.candidates label strong {
+  display: block;
+  font-weight: 600;
+}
+
+.url {
+  color: var(--ink-faint);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+/* the inline edit form lays its legends out beside the fields */
+.posts .edit-form {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.6rem 1rem;
+}
+
+.posts .edit-form > label {
+  margin: 0;
+  text-align: right;
+}
+
+.posts .edit-form > .hint,
+.posts .edit-form > .buttons,
+.posts .edit-form > .flash {
+  grid-column: 2;
+  margin-top: -0.2rem;
+}
+
+.posts .edit-form > .buttons {
+  margin-top: 0.5rem;
+}
+
+/* delete hides behind a guard, like a switch with a flip cover */
+details.delete {
+  margin-top: 1.4rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--groove);
+  box-shadow: inset 0 1px 0 var(--groove-hi);
+}
+
+.posts details.delete {
+  margin-left: 9.5rem;
+}
+
+details.delete summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--danger-text);
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+
+details.delete summary::-webkit-details-marker {
+  display: none;
+}
+
+details.delete summary::before {
+  content: "";
+  width: 0.9rem;
+  height: 0.55rem;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(oklch(from var(--error) calc(l + 0.08) c h), oklch(from var(--error) calc(l - 0.08) c h));
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform-origin: bottom;
+  transition: transform 0.2s;
+}
+
+details.delete[open] summary::before {
+  transform: perspective(40px) rotateX(55deg);
+}
+
+details.delete p {
+  margin: 0.75rem 0;
+}
+
+/* ---------- messages ---------- */
+
+.flash {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+  background: linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: var(--well);
+  color: var(--readout);
+}
+
+.flash::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateY(-1px);
+}
+
+.flash.error {
+  color: var(--danger-text);
+}
+
+.flash.error::before {
+  background: var(--pointer);
+  box-shadow: 0 0 6px 1px oklch(from var(--pointer) l c h / 0.8);
+}
+
+.flash.ok::before {
+  background: var(--lamp-h);
+  box-shadow: 0 0 6px 1px oklch(from var(--lamp-h) l c h / 0.8);
+}
+
+.flash a {
+  color: inherit;
+}
+
+.error-inline {
+  color: var(--danger-text);
+  font-size: 0.9rem;
+}
+
+.failing {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.failing li {
+  position: relative;
+  padding: 0.5rem 0 0.5rem 1.3rem;
+  border-bottom: 1px solid var(--groove);
+  box-shadow: 0 1px 0 var(--groove-hi);
+}
+
+.failing li::before {
+  content: "";
+  position: absolute;
+  left: 0.1rem;
+  top: 0.95rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pointer);
+  box-shadow: 0 0 5px 1px oklch(from var(--pointer) l c h / 0.6);
+}
+
+.failing a {
+  font-weight: 600;
+}
+
+.failing .age,
+.settings .age {
+  color: var(--ink-faint);
+  font: 600 0.85rem var(--narrow);
+}
+
+/* tier counts read like a row of meter windows */
+.tier-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tier-counts li {
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  background: linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: var(--well);
+  color: var(--readout);
+  font: 600 0.92rem var(--narrow);
+  letter-spacing: 0.02em;
+}
+
+.empty {
+  margin: 2rem 0 0.5rem;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+}
+
+.intro {
+  max-width: 28rem;
+  margin: 2rem auto 1rem;
+  text-align: center;
+}
+
+.intro > h1 {
+  font-size: 2.2rem;
+}
+
+.error-page > h1 {
+  font-size: 2rem;
+}
+
+.notice {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0.55rem 0.6rem 0.55rem 1.1rem;
+  border-radius: 6px;
+  background: linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: 0 0 0 1px #000, 0 0 0 5px var(--slot), 0 18px 30px rgba(0, 0, 0, 0.6);
+  color: var(--display);
+  font-weight: 500;
+  text-shadow: 0 0 8px oklch(from var(--glow) l c h / 0.4);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.notice button {
+  padding: 0.2rem 0.8rem;
+}
+
+/* htmx: its own indicator styles are off because they are injected inline */
+
+.htmx-indicator {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--glow);
+  font: 600 0.9rem var(--narrow);
+}
+
+.htmx-indicator::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--glow);
+  box-shadow: 0 0 6px 1px oklch(from var(--glow) l c h / 0.8);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline-flex;
+}
+
+/* ---------- narrower cabinets ---------- */
+
+@media (max-width: 62rem) {
+  .bar {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "dial"
+      "tiers"
+      "sort"
+      "lamps";
+  }
+
+  .tiers {
+    justify-content: flex-start;
+    padding-left: 0.25rem;
+  }
+
+  .sort {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 40rem) {
+  body {
+    padding: 0.6rem 0.4rem 2rem;
+  }
+
+  .receiver {
+    padding: 6px 6px;
+    border-radius: 8px;
+  }
+
+  .faceplate {
+    padding: 1rem 0.85rem 2rem;
+  }
+
+  .top {
+    gap: 0.9rem;
+  }
+
+  .live {
+    margin-left: -0.5rem;
+  }
+
+  .brand {
+    font-size: 1.05rem;
+    letter-spacing: 0.12em;
+  }
+
+  .actions {
+    gap: 0.4rem;
+  }
+
+  .actions a {
+    padding: 0.35rem 0.7rem;
+  }
+
+  .actions,
+  .tags ~ .actions {
+    margin-left: auto;
+  }
+
+  .tags {
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+
+  .tag {
+    flex: 1 1 0;
+  }
+
+  .tag a {
+    width: 100%;
+  }
+
+  .dial {
+    padding: 0.7rem 0.9rem 0.6rem;
+  }
+
+  .tag-title {
+    font-size: 1.3rem;
+  }
+
+  .readout {
+    font-size: 0.85rem;
+  }
+
+  .scale {
+    height: 4.5rem;
+  }
+
+  .marks {
+    font-size: 0.55rem;
+  }
+
+  .follow {
+    padding: 0.75rem 0 0.8rem 0.6rem;
+  }
+
+  .follow::before {
+    left: -0.35rem;
+  }
+
+  /* title and age take the first line; the trace and keys drop to the second */
+  .head .title {
+    flex: 1 1 calc(100% - 8rem);
+  }
+
+  .scope {
+    margin-left: 2.9rem;
+  }
+
+  .m-1h {
+    color: transparent;
+    text-shadow: none;
+  }
+
+  .sort .label {
+    flex-basis: 100%;
+  }
+
+  .sort button {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.82rem;
+  }
+
+  .scope ~ .controls {
+    margin-left: auto;
+  }
+
+  .latest {
+    padding-left: 2.9rem;
+    white-space: normal;
+  }
+
+  .latest .post {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .latest .post + .post::before {
+    content: none;
+  }
+
+  .posts {
+    margin-left: 0;
+    padding: 0.8rem 0.85rem;
+  }
+
+  .posts .edit-form {
+    display: block;
+  }
+
+  .posts .edit-form > label {
+    margin: 1rem 0 0.4rem;
+    text-align: left;
+  }
+
+  .posts details.delete {
+    margin-left: 0;
+  }
+
+  .form-page > h1,
+  .settings > h1,
+  .posts-page > h1,
+  .error-page > h1 {
+    font-size: 1.35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+    animation: none !important;
+  }
+}
+
+.theme-form .radio {
+  flex-wrap: wrap;
+}
+
+.theme-form .radio .hint {
+  flex-basis: 100%;
+  margin: 0 0 0.5rem 1.75rem;
+}

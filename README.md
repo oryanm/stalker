@@ -136,6 +136,15 @@ stalker help [command]
 
 `export`, `check` and `import` can run while `serve` is running on the same database.
 
+## Themes
+
+Settings has a theme picker. **Receiver** (the default) is a 1970s stereo receiver in the
+[Darcula Forest](https://github.com/oryanm/darcula-forest) colours, with a tuning dial that places each follow at the age of
+its latest post. **Classic** is the original Fraidycat-style list and follows your system's light or dark setting.
+
+A theme is a single stylesheet over the same HTML: add `internal/web/static/themes/<id>.css` and an entry in the `themes` list
+in `internal/web/theme.go`.
+
 ## Importance tiers and polling
 
 | Tier       |    | OPML category    | Checked every |
