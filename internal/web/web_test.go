@@ -471,12 +471,12 @@ func TestHomeGroupsFraidycatExport(t *testing.T) {
 		activeTier model.Importance
 		rows       int
 	}{
-		{"default is home", "/", model.HomeTag, []tier{{0, 0}, {1, 4}}, model.Frequent, 4},
+		{"default is home", "/", model.HomeTag, []tier{{1, 4}}, model.Frequent, 4},
 		{"videos", "/?tag=" + url.QueryEscape("📹"), "📹",
-			[]tier{{0, 0}, {1, 2}, {7, 2}, {30, 1}, {365, 2}}, model.Frequent, 2},
+			[]tier{{1, 2}, {7, 2}, {30, 1}, {365, 2}}, model.Frequent, 2},
 		{"videos rarely", "/?tier=365&tag=" + url.QueryEscape("📹"), "📹",
-			[]tier{{0, 0}, {1, 2}, {7, 2}, {30, 1}, {365, 2}}, model.Rarely, 2},
-		{"dev", "/?tag=" + url.QueryEscape(devTag), devTag, []tier{{0, 0}, {7, 4}}, model.Occasional, 4},
+			[]tier{{1, 2}, {7, 2}, {30, 1}, {365, 2}}, model.Rarely, 2},
+		{"dev", "/?tag=" + url.QueryEscape(devTag), devTag, []tier{{7, 4}}, model.Occasional, 4},
 		{"empty realtime", "/?tier=0&tag=" + url.QueryEscape(devTag), devTag, []tier{{0, 0}, {7, 4}}, model.Realtime, 0},
 	}
 	for _, tt := range tests {

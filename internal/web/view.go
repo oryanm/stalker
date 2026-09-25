@@ -366,7 +366,7 @@ type tierTab struct {
 	Active bool
 }
 
-// buildTierTabs shows tiers with follows, Realtime always, and the current one.
+// buildTierTabs shows tiers with follows, plus the current one even when empty.
 func buildTierTabs(inTag []model.Follow, current model.Importance) []tierTab {
 	counts := map[model.Importance]int{}
 	for _, f := range inTag {
@@ -375,7 +375,7 @@ func buildTierTabs(inTag []model.Follow, current model.Importance) []tierTab {
 	var tabs []tierTab
 	for _, t := range model.Tiers {
 		n := counts[t.Importance]
-		if n > 0 || t.Importance == model.Realtime || t.Importance == current {
+		if n > 0 || t.Importance == current {
 			tabs = append(tabs, tierTab{Tier: t, Count: n, Active: t.Importance == current})
 		}
 	}

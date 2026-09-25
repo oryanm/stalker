@@ -40,7 +40,7 @@ genuinely wrong, make the smallest change, update every caller, and report it.
 
 - Follows have tags and one importance tier (see `model.Tiers`). Follows without tags live under the 🏠 tag
   (`model.HomeTag`); follows tagged `🏠` explicitly also show there. Tag tabs: 🏠 first, then the other tags sorted.
-- Within a tag, tier sub-tabs are shown for tiers that have follows, and Realtime is always shown. The default tier is the most
+- Within a tag, tier sub-tabs are shown for tiers that have follows (plus the selected tier when it is empty). The default tier is the most
   important tier present in that tag.
 - A follow row shows: title (links to the site), how long ago its latest post was (`timeAgo` below), an activity sparkline, the
   titles of its latest posts (each linked, each with its own age), an error marker when the last fetch failed, and edit/refresh
