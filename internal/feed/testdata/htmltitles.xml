@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+    <title><![CDATA[  <b>Markup</b>   in
+      titles  ]]></title>
+    <link>https://html.example.com/</link>
+    <item><title><![CDATA[<a href="https://x">Linked</a> <em>title</em>]]></title><guid>1</guid></item>
+    <item><title>AT&amp;amp;T &amp;quot;quoted&amp;quot;</title><guid>2</guid></item>
+    <item><title>Fish &amp; Chips &lt; 5</title><guid>3</guid></item>
+    <item><title><![CDATA[Line<br/>break<p>para</p><script>alert(1)</script>]]></title><guid>4</guid></item>
+    <item><title>Caf&#233; &#x2014; nbsp&amp;nbsp;here</title><guid>5</guid></item>
+    <item><title>Why Optional&lt;T&gt; is not Serializable</title><guid>6</guid></item>
+    <item><title><![CDATA[<STRONG>Map<String, Object></STRONG> vs <B>]]></title><guid>7</guid></item>
+  </channel>
+</rss>

@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+.DS_Store
+.env
+.idea
+.vscode
+data/
+*.db
+*.db-*
+/stalker
+Dockerfile
+docker-compose.yml
+*.md
+**/testdata
+**/*_test.go

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="http://www.youtube.com/feeds/videos.xml?channel_id=UCsXVk37bltHxD1rDPwtNM8Q"/>
+ <id>yt:channel:X1GkAJdz_WF5Vyc2xUxZZw</id>
+ <yt:channelId>X1GkAJdz_WF5Vyc2xUxZZw</yt:channelId>
+ <title>Some Channel</title>
+ <link rel="alternate" href="https://www.youtube.com/channel/UCsXVk37bltHxD1rDPwtNM8Q"/>
+ <author>
+  <name>Some Channel</name>
+  <uri>https://www.youtube.com/channel/UCsXVk37bltHxD1rDPwtNM8Q</uri>
+ </author>
+ <published>2014-03-10T19:03:42+00:00</published>
+ <entry>
+  <id>yt:video:dQw4w9WgXcQ</id>
+  <yt:videoId>dQw4w9WgXcQ</yt:videoId>
+  <yt:channelId>UCsXVk37bltHxD1rDPwtNM8Q</yt:channelId>
+  <title>Building a thing &amp; breaking it</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
+  <author>
+   <name>Some Channel</name>
+   <uri>https://www.youtube.com/channel/UCsXVk37bltHxD1rDPwtNM8Q</uri>
+  </author>
+  <published>2026-09-20T15:00:06+00:00</published>
+  <updated>2026-09-23T02:11:45+00:00</updated>
+  <media:group>
+   <media:title>Building a thing &amp; breaking it</media:title>
+   <media:content url="https://www.youtube.com/v/dQw4w9WgXcQ?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg" width="480" height="360"/>
+   <media:description>In this video we build a thing.</media:description>
+   <media:community>
+    <media:starRating count="1000" average="5.00" min="1" max="5"/>
+    <media:statistics views="12345"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:abcDEF12345</id>
+  <yt:videoId>abcDEF12345</yt:videoId>
+  <yt:channelId>UCsXVk37bltHxD1rDPwtNM8Q</yt:channelId>
+  <title></title>
+  <author><name>Some Channel</name></author>
+  <published>2026-09-10T15:00:00+00:00</published>
+  <updated>2026-09-11T00:00:00+00:00</updated>
+  <media:group>
+   <media:title>Only in media title</media:title>
+   <media:description>Short description.</media:description>
+  </media:group>
+ </entry>
+</feed>

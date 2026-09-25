@@ -1,0 +1,35 @@
+# Put STALKER_PASSWORD=... in a .env file next to this one, then: docker compose up -d
+services:
+  stalker:
+    build: .
+    image: stalker:latest
+    restart: unless-stopped
+    environment:
+      STALKER_PASSWORD: ${STALKER_PASSWORD:?set STALKER_PASSWORD in .env}
+      STALKER_USERNAME: ${STALKER_USERNAME:-stalker}
+      STALKER_LOG_LEVEL: ${STALKER_LOG_LEVEL:-info}
+      # post dates are shown in this timezone
+      TZ: ${TZ:-America/Toronto}
+    # only the reverse proxy on this host should reach it; TLS terminates there
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - stalker-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp # SQLite's temporary files
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # the app drains for up to 10s on SIGTERM
+    stop_grace_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  stalker-data:
+    name: stalker-data

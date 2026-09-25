@@ -1,0 +1,7 @@
+data/
+/stalker
+*.db
+*.db-*
+.env
+.DS_Store
+.idea/

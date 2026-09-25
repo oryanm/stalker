@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title type="html">Clean Coder &lt;b&gt;Blog&lt;/b&gt;</title>
+  <subtitle>Russ Cox's blog</subtitle>
+  <link href="http://research.swtch.com/atom.xml" rel="self"/>
+  <link href="http://research.swtch.com/"/>
+  <logo>/logo.png</logo>
+  <updated>2024-05-01T00:00:00Z</updated>
+  <id>http://research.swtch.com/</id>
+  <author><name>Russ Cox</name></author>
+  <entry>
+    <title>Updated only</title>
+    <link href="http://research.swtch.com/rsc/2024/04/01/updated.html"/>
+    <updated>2024-04-01T00:00:00Z</updated>
+    <id>http://research.swtch.com/rsc/2024/04/01/updated</id>
+  </entry>
+  <entry>
+    <title>Published and updated</title>
+    <link rel="alternate" type="text/html" href="http://research.swtch.com/rsc/2024/05/01/both.html"/>
+    <link rel="replies" href="http://research.swtch.com/comments"/>
+    <published>2024-05-01T00:00:00Z</published>
+    <updated>2024-05-02T00:00:00Z</updated>
+    <id>http://research.swtch.com/rsc/2024/05/01/both</id>
+    <author><name>rsc</name></author>
+  </entry>
+</feed>

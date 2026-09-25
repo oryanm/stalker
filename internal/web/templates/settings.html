@@ -1,0 +1,48 @@
+{{define "content"}}
+<section class="settings">
+<h1>Settings</h1>
+{{- with .Flash}}
+<p class="flash ok" role="status">{{.}}</p>
+{{- end}}
+
+<h2>Overview</h2>
+<p>Follows: {{.Total}}{{with .Tabs}} · Tags: {{len .}}{{end}}</p>
+<ul class="tier-counts">
+{{- range .TierCounts}}
+<li data-tier="{{.Tier.Importance}}"><span aria-hidden="true">{{.Tier.Emoji}}</span> {{.Tier.Name}}: {{.Count}}</li>
+{{- end}}
+</ul>
+
+<h2>Sort follows by</h2>
+<form class="sort-form" method="post" action="/settings">
+{{- range sortOptions}}
+<label class="radio"><input type="radio" name="sort" value="{{.Value}}"{{if eq .Value $.Sort}} checked{{end}}> {{.Label}}</label>
+{{- end}}
+<div class="buttons"><button type="submit">Save</button></div>
+</form>
+
+<h2 id="import">Import</h2>
+<p>Import an OPML file exported from Fraidycat or another feed reader. Feeds you already follow are skipped.</p>
+<form class="import-form" method="post" action="/import" enctype="multipart/form-data" hx-disabled-elt="find button">
+{{- with .ImportError}}
+<p class="flash error" role="alert">{{.}}</p>
+{{- end}}
+<input type="file" name="file" accept=".opml,.xml,text/x-opml,text/xml,application/xml" required>
+<div class="buttons"><button type="submit">Import</button><span class="htmx-indicator">Importing…</span></div>
+</form>
+
+<h2>Export</h2>
+<p><a href="/export.opml" hx-boost="false" download="stalker.opml">Download your follows as OPML</a>. The file can be imported back into Fraidycat.</p>
+
+<h2>Failing follows</h2>
+{{- if .Failing}}
+<ul class="failing">
+{{- range .Failing}}
+<li><a href="/follows/{{.ID}}/edit" dir="auto">{{.DisplayTitle}}</a> <span class="error-inline">{{errorText .}}</span>{{with timeAgo .LastFetchedAt $.Now}} <span class="age" title="Last attempt">{{.}}</span>{{end}}</li>
+{{- end}}
+</ul>
+{{- else}}
+<p>None. Every follow fetched fine last time.</p>
+{{- end}}
+</section>
+{{end}}

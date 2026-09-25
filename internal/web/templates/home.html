@@ -1,0 +1,37 @@
+{{define "content"}}
+{{- if .Welcome}}
+<section class="intro">
+<h1>Ready?</h1>
+<p>You don’t follow anything yet.</p>
+<p><a class="button primary" href="/add">Add a follow</a></p>
+<p>Or <a href="/settings#import">import an OPML file</a> from Fraidycat or another reader.</p>
+</section>
+{{- else}}
+<div class="bar">
+<h1 class="tag-title">{{.Tag}}</h1>
+<nav class="tiers" aria-label="Importance">
+<ul>
+{{- range .TierTabs}}
+<li class="tier{{if .Active}} active{{end}}" data-tier="{{.Tier.Importance}}" data-count="{{.Count}}"><a href="{{tierURL $.Tag .Tier.Importance}}" title="{{.Tier.Description}}"{{if .Active}} aria-current="page"{{end}}><span aria-hidden="true">{{.Tier.Emoji}}</span> {{.Tier.Name}}{{if .Count}} <span class="count">{{.Count}}</span>{{end}}</a></li>
+{{- end}}
+</ul>
+</nav>
+<form class="sort" method="post" action="/settings">
+<input type="hidden" name="next" value="{{.Self}}">
+<span class="label">Sort:</span>
+{{- range sortOptions}}
+<button type="submit" name="sort" value="{{.Value}}" class="link{{if eq .Value $.Sort}} selected{{end}}"{{if eq .Value $.Sort}} aria-pressed="true"{{end}}>{{.Label}}</button>
+{{- end}}
+</form>
+</div>
+{{- if .Rows}}
+<ol class="follows">
+{{- range .Rows}}
+{{template "row" .}}
+{{- end}}
+</ol>
+{{- else}}
+<p class="empty">Nothing in {{.Tier.Emoji}} {{.Tier.Name}} under {{.Tag}} yet. <a href="{{.AddURL}}">Add a follow</a>.</p>
+{{- end}}
+{{- end}}
+{{end}}

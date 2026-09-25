@@ -1,0 +1,18 @@
+{{define "content"}}
+<section class="form-page">
+<h1>Add a follow</h1>
+<form class="add-form" method="post" action="/follows" hx-disabled-elt="find button">
+{{- with .Error}}
+<p class="flash error" role="alert">{{.}}{{with $.Existing}} <a href="{{.}}">Show it</a>{{end}}</p>
+{{- end}}
+<label for="add-url">Address</label>
+<input id="add-url" name="url" value="{{.Form.URL}}" placeholder="https://example.com, a YouTube channel, a subreddit…" maxlength="2048" required autofocus>
+<p class="hint">A site, a feed, a YouTube channel, a subreddit, a GitHub repository…</p>
+{{template "followfields" .Form}}
+<div class="buttons">
+<button type="submit" class="primary">Follow</button>
+<span class="htmx-indicator">Looking for feeds…</span>
+</div>
+</form>
+</section>
+{{end}}

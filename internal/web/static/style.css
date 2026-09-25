@@ -1,0 +1,826 @@
+/* stalker: Fraidycat-inspired, light and dark. No inline styles (CSP). */
+
+:root {
+  --bg: #f7f7e7;
+  --paper: #fcfcf3;
+  --raised: #ffffff;
+  --text: #221a10;
+  --muted: #7a7258;
+  --link: #662200;
+  --visited: #aa8844;
+  --hover: #007799;
+  --rule: #cccc77;
+  --border: #ffaa99;
+  --tab: #ffddcc;
+  --pink: #ff0099;
+  --on-pink: #ffffff;
+  --title: #997755;
+  --badge-text: #fffaf0;
+  --h-title: #003333;
+  --h-badge: #118844;
+  --h-post: #4d8a00;
+  --d-title: #007777;
+  --d-badge: #559999;
+  --d-post: #337799;
+  --m-title: #997755;
+  --m-badge: #b8a07a;
+  --m-post: #9a8a66;
+  --spark-recent: #ff0099;
+  --spark-recent-fill: #ffc0cb;
+  --spark-old: #9999bb;
+  --spark-old-fill: #dde2ea;
+  --error: #c0392b;
+  --error-bg: #fde8e4;
+  --ok-bg: #e2f3e5;
+  --input: #ffffff;
+  --shadow: #221a10;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b1a;
+    --paper: #15151f;
+    --raised: #1d1d2b;
+    --text: #f3e9e9;
+    --muted: #9c9aa8;
+    --link: #cceeee;
+    --visited: #a0a0a8;
+    --hover: #eeff66;
+    --rule: #1f4d57;
+    --border: #1f5a66;
+    --tab: #10323a;
+    --pink: #ff3fa8;
+    --title: #b8a58a;
+    --badge-text: #0b0b1a;
+    --h-title: #9fe3ae;
+    --h-badge: #6fcf86;
+    --h-post: #7fd892;
+    --d-title: #7fd6d6;
+    --d-badge: #5bb8b8;
+    --d-post: #6cc7d0;
+    --m-title: #c7b08c;
+    --m-badge: #a8906b;
+    --m-post: #b39d7a;
+    --spark-recent: #ff4fb0;
+    --spark-recent-fill: #4a1636;
+    --spark-old: #8a8aa8;
+    --spark-old-fill: #262638;
+    --error: #ff8a7a;
+    --error-bg: #3a1a1a;
+    --ok-bg: #173522;
+    --input: #101019;
+    --shadow: #000000;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 100%;
+  line-height: 1.6;
+  overflow-y: scroll;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--link);
+}
+
+a:hover {
+  color: var(--hover);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin: 0.5rem 0 1rem;
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin: 2rem 0 0.5rem;
+}
+
+main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0.5rem 1.25rem 4rem;
+}
+
+/* header */
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 0.5rem;
+}
+
+.brand {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--pink);
+  text-decoration: none;
+}
+
+.tags {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.tags ul,
+.tiers ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* tag tabs sit in one pill-shaped segmented control */
+.tags ul {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0.2rem;
+  padding: 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  border-radius: 999px;
+  background: var(--paper);
+}
+
+.tag a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  font-size: 1.3rem;
+  line-height: 1;
+  text-decoration: none;
+  opacity: 0.85;
+  filter: saturate(0.8);
+  transition: background-color 0.15s, opacity 0.15s, transform 0.15s;
+}
+
+.tag a:hover,
+.tag a:focus-visible {
+  background: var(--raised);
+  opacity: 1;
+  filter: none;
+  transform: translateY(-1px);
+}
+
+.tag a:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--hover);
+}
+
+.tag.active a {
+  background: color-mix(in srgb, var(--pink) 20%, transparent);
+  box-shadow: inset 0 0 0 2px var(--pink);
+  opacity: 1;
+  filter: none;
+}
+
+/* a dot shows how fresh the tag's realtime follows are */
+.tag.age-h a::after,
+.tag.age-d a::after {
+  content: "";
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--paper);
+}
+
+.tag.age-h a::after {
+  background: var(--h-badge);
+}
+
+.tag.age-d a::after {
+  background: var(--d-badge);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.actions a {
+  text-decoration: none;
+}
+
+.actions .add {
+  padding: 0.3rem 0.8rem;
+  border-radius: 1rem;
+  background: var(--pink);
+  color: var(--on-pink);
+  font-weight: bold;
+}
+
+.actions .add:hover {
+  color: var(--on-pink);
+  filter: brightness(1.1);
+}
+
+/* tag bar, tiers and sort */
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.tag-title {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.tier a {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  color: var(--link);
+  font-variant: small-caps;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.tier.active a {
+  background: var(--pink);
+  color: var(--on-pink);
+}
+
+.count {
+  font-size: 0.8rem;
+  font-variant: normal;
+  opacity: 0.75;
+}
+
+.sort {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.sort .selected {
+  color: var(--text);
+  font-weight: bold;
+}
+
+/* follow rows */
+
+.follows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.follow {
+  margin: 0.6rem 0;
+  padding: 0.45rem 0.8rem 0.5rem;
+  border: 2px solid transparent;
+  border-bottom: 1px dotted var(--rule);
+  background: var(--paper);
+}
+
+.follow:hover,
+.follow:focus-within {
+  border: 2px solid var(--text);
+  background: var(--raised);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.6rem;
+}
+
+.head .title {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--title);
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.head a.title:hover {
+  text-decoration: underline;
+}
+
+.head .age {
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  background: var(--m-badge);
+  color: var(--badge-text);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.head.age-h .title {
+  color: var(--h-title);
+}
+
+.head.age-h .age {
+  background: var(--h-badge);
+}
+
+.head.age-d .title {
+  color: var(--d-title);
+}
+
+.head.age-d .age {
+  background: var(--d-badge);
+}
+
+.head.age-M .title {
+  color: var(--m-title);
+}
+
+.spark {
+  flex: none;
+  overflow: visible;
+}
+
+.spark polyline {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.spark polygon {
+  stroke: none;
+}
+
+.spark-recent polyline {
+  stroke: var(--spark-recent);
+}
+
+.spark-recent polygon {
+  fill: var(--spark-recent-fill);
+}
+
+.spark-old polyline {
+  stroke: var(--spark-old);
+}
+
+.spark-old polygon {
+  fill: var(--spark-old-fill);
+}
+
+.error {
+  position: relative;
+  color: var(--error);
+  cursor: help;
+}
+
+.error-text {
+  display: none;
+  position: absolute;
+  top: 1.5rem;
+  left: -0.5rem;
+  z-index: 3;
+  width: max-content;
+  max-width: min(28rem, 80vw);
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--error);
+  border-radius: 4px;
+  background: var(--raised);
+  box-shadow: 3px 3px 0 var(--shadow);
+  color: var(--error);
+  font-size: 0.85rem;
+  white-space: normal;
+}
+
+.error:hover .error-text,
+.error:focus .error-text,
+.error:focus-within .error-text {
+  display: block;
+}
+
+.fetching {
+  color: var(--muted);
+  font-size: 0.8rem;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-left: auto;
+  font-size: 0.8rem;
+  opacity: 0.55;
+}
+
+.follow:hover .controls,
+.follow:focus-within .controls {
+  opacity: 1;
+}
+
+.controls a {
+  color: var(--muted);
+}
+
+.controls form {
+  display: inline;
+  margin: 0;
+}
+
+.controls .link {
+  color: var(--muted);
+}
+
+/* latest posts, on one line like Fraidycat */
+
+.latest {
+  margin: 0.15rem 0 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.latest .post {
+  display: inline;
+}
+
+.latest .post + .post::before {
+  content: " \2756\00a0";
+  color: var(--border);
+}
+
+.post a,
+.post .text {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.post a:visited {
+  color: var(--visited);
+}
+
+.post a:hover {
+  color: var(--hover);
+  text-decoration: underline;
+}
+
+.post .age {
+  margin-left: 0.35rem;
+  color: var(--m-post);
+  font-size: 0.8rem;
+}
+
+.post.age-h .age {
+  color: var(--h-post);
+  font-weight: bold;
+}
+
+.post.age-d .age {
+  color: var(--d-post);
+  font-weight: bold;
+}
+
+/* expanded posts and inline edit form */
+
+.posts:empty {
+  display: none;
+}
+
+.posts {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dotted var(--rule);
+}
+
+.recent {
+  margin: 0 0 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.recent .post {
+  margin-bottom: 0.3rem;
+}
+
+/* forms */
+
+.form-page,
+.settings,
+.posts-page,
+.error-page {
+  max-width: 42rem;
+}
+
+label {
+  display: block;
+  margin: 0.9rem 0 0.25rem;
+  font-weight: 600;
+}
+
+label.radio {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.3rem 0;
+  font-weight: normal;
+}
+
+.optional {
+  color: var(--muted);
+  font-weight: normal;
+}
+
+input:not([type="checkbox"], [type="radio"], [type="file"]),
+select {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--input);
+  color: var(--text);
+  font: inherit;
+}
+
+input:focus,
+select:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 1px;
+}
+
+.hint {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+button,
+.button {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--tab);
+  color: var(--text);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button.primary,
+.button.primary {
+  border-color: var(--pink);
+  background: var(--pink);
+  color: var(--on-pink);
+  font-weight: bold;
+}
+
+button.danger {
+  border-color: var(--error);
+  background: var(--error);
+  color: var(--on-pink);
+}
+
+button.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  font-size: inherit;
+  text-decoration: underline;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.candidates {
+  padding: 0;
+  list-style: none;
+}
+
+.candidates li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0.5rem 0;
+}
+
+.candidates label {
+  margin: 0;
+  font-weight: normal;
+}
+
+.url {
+  color: var(--muted);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+details.delete {
+  margin-top: 1.5rem;
+}
+
+details.delete summary {
+  color: var(--error);
+  cursor: pointer;
+}
+
+.edit-box {
+  max-width: 42rem;
+}
+
+/* messages */
+
+.flash {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.flash.error {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.flash.ok {
+  background: var(--ok-bg);
+}
+
+.error-inline {
+  color: var(--error);
+  font-size: 0.85rem;
+}
+
+.failing li {
+  margin-bottom: 0.4rem;
+}
+
+.failing .age {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.tier-counts {
+  padding-left: 1.25rem;
+}
+
+.empty {
+  color: var(--muted);
+}
+
+.intro {
+  max-width: 26rem;
+  margin: 3rem auto;
+  text-align: center;
+}
+
+.intro h1 {
+  color: var(--pink);
+  font-size: 2.2rem;
+}
+
+.notice {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  z-index: 5;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: var(--raised);
+  box-shadow: 3px 3px 0 var(--shadow);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.notice button {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.7rem;
+}
+
+/* htmx: its own indicator styles are off because they are injected inline */
+
+.htmx-indicator {
+  display: none;
+  color: var(--muted);
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline;
+}
+
+/* narrow screens */
+
+@media (max-width: 40rem) {
+  main,
+  .top {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .tags {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .tags ul {
+    flex-wrap: nowrap;
+  }
+
+  .sort {
+    margin-left: 0;
+  }
+
+  .follow {
+    padding: 0.4rem 0.55rem;
+  }
+
+  .follow:hover,
+  .follow:focus-within {
+    box-shadow: none;
+  }
+
+  .controls {
+    opacity: 1;
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  .latest {
+    white-space: normal;
+  }
+
+  .latest .post {
+    display: block;
+  }
+
+  .latest .post + .post::before {
+    content: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fetching {
+    animation: none;
+  }
+}

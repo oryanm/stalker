@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+    <title>Relative Links</title>
+    <link>/blog/</link>
+    <image><url>images/logo.png</url></image>
+    <item>
+      <title>Relative to site</title>
+      <link>posts/one.html</link>
+      <pubDate>Mon, 06 Jan 2025 10:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Root relative</title>
+      <link>/about</link>
+      <pubDate>Sun, 05 Jan 2025 10:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Protocol relative</title>
+      <link>//cdn.example.org/video</link>
+      <pubDate>Sat, 04 Jan 2025 10:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Script link</title>
+      <link>javascript:alert(1)</link>
+      <pubDate>Fri, 03 Jan 2025 10:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

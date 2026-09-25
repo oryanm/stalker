@@ -1,0 +1,30 @@
+{{define "content"}}
+<section class="form-page">
+<h1>Choose feeds</h1>
+<p>Several feeds were found{{with .Form.URL}} at <span class="url">{{.}}</span>{{end}}. Pick the ones to follow.</p>
+<form class="choose-form" method="post" action="/follows/choose" hx-disabled-elt="find button">
+{{- with .Error}}
+<p class="flash error" role="alert">{{.}}</p>
+{{- end}}
+<input type="hidden" name="url" value="{{.Form.URL}}">
+<ul class="candidates">
+{{- range $i, $c := .Candidates}}
+<li>
+<input type="checkbox" id="candidate-{{$i}}" name="feed" value="{{$c.FeedURL}}"{{if index $.Selected $c.FeedURL}} checked{{end}}>
+<label for="candidate-{{$i}}"><strong dir="auto">{{or $c.Title "Untitled feed"}}</strong> <span class="url">{{$c.FeedURL}}</span></label>
+<input type="hidden" name="candidate" value="{{$c.FeedURL}}">
+<input type="hidden" name="candidate_site" value="{{$c.SiteURL}}">
+<input type="hidden" name="candidate_title" value="{{$c.Title}}">
+</li>
+{{- end}}
+</ul>
+{{template "followfields" .Form}}
+<p class="hint">The title is only used when a single feed is picked.</p>
+<div class="buttons">
+<button type="submit" class="primary">Follow selected</button>
+<a href="/add">Cancel</a>
+<span class="htmx-indicator">Fetching…</span>
+</div>
+</form>
+</section>
+{{end}}
