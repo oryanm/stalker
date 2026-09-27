@@ -454,7 +454,7 @@ main {
 .controls {
   display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.2rem;
   margin-left: auto;
   font-size: 0.8rem;
   opacity: 0.55;
@@ -474,8 +474,23 @@ main {
   margin: 0;
 }
 
+.controls .edit,
 .controls .link {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 4px;
   color: var(--muted);
+  text-decoration: none;
+}
+
+.controls .edit:hover,
+.controls .edit:focus-visible,
+.controls .link:hover,
+.controls .link:focus-visible {
+  background: var(--raised);
+  color: var(--pink);
 }
 
 /* arrow that expands a follow's recent posts */

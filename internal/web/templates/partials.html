@@ -22,16 +22,16 @@
 {{- with sparkline .Activity .Now}}
 <span class="scope">{{.}}</span>
 {{- end}}
-{{- with errorText $f}}
+{{- with shownError $f .Now}}
 <span class="error" tabindex="0" title="{{.}}"><span aria-hidden="true">⚠</span><span class="error-text">{{.}}</span></span>
 {{- end}}
 {{- if .Fetching}}
 <span class="fetching" title="Fetching now">fetching…</span>
 {{- end}}
 <div class="controls">
-<a class="edit" href="/follows/{{$f.ID}}/edit" hx-get="/follows/{{$f.ID}}/edit" hx-target="#posts-{{$f.ID}}" hx-swap="innerHTML" data-toggle="edit">edit</a>
+<a class="edit" href="/follows/{{$f.ID}}/edit" hx-get="/follows/{{$f.ID}}/edit" hx-target="#posts-{{$f.ID}}" hx-swap="innerHTML" data-toggle="edit" title="Edit"><svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14"><path d="M10.5 2.5l3 3L6 13l-3.5.5.5-3.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="visually-hidden">Edit</span></a>
 <form class="refresh" method="post" action="/follows/{{$f.ID}}/refresh" hx-post="/follows/{{$f.ID}}/refresh" hx-target="closest .summary" hx-swap="innerHTML" hx-disabled-elt="find button">
-<button type="submit" class="link" title="Fetch now">refresh</button>
+<button type="submit" class="link" title="Fetch now"><svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14"><path d="M13 8a5 5 0 1 1-1.46-3.54M13 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="visually-hidden">Fetch now</span></button>
 </form>
 </div>
 </div>

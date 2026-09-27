@@ -255,6 +255,21 @@ func tierSelect(id string, selected model.Importance) tierSelectData {
 	return tierSelectData{id, selected}
 }
 
+// errorGrace is how long a follow must keep failing before its row shows a
+// warning, so a feed that is down for a few hours (YouTube's feeds return
+// false 404s at times) raises no alarm.
+const errorGrace = 24 * time.Hour
+
+// shownError is the row's warning text: empty until the follow has been
+// failing for errorGrace, except for a follow that has never had a post,
+// whose feed may simply be wrong.
+func shownError(f model.Follow, now time.Time) string {
+	if f.LastError == "" || !f.LastPostAt.IsZero() && now.Sub(f.FailingSince) < errorGrace {
+		return ""
+	}
+	return errorSummary(f)
+}
+
 // errorSummary is the error marker's tooltip text.
 func errorSummary(f model.Follow) string {
 	if f.LastError == "" {

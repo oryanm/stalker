@@ -1,7 +1,7 @@
 {{define "content"}}
 <section class="posts-page">
 <h1 dir="auto">{{with safeURL .Follow.URL}}<a href="{{.}}" target="_blank" rel="noopener noreferrer">{{$.Follow.DisplayTitle}}</a>{{else}}{{.Follow.DisplayTitle}}{{end}}</h1>
-{{- with errorText .Follow}}
+{{- with shownError .Follow .Now}}
 <p class="flash error">{{.}}</p>
 {{- end}}
 {{template "posts" .}}

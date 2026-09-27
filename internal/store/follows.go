@@ -19,7 +19,7 @@ var errNoFeedURL = errors.New("store: follow has no feed URL")
 const followColumns = `
 	f.id, f.url, f.feed_url, f.title, f.feed_title, f.description, f.photo_url, f.importance,
 	f.created_at, f.edited_at, f.etag, f.last_modified, f.last_fetched_at, f.next_fetch_at,
-	f.last_error, f.error_count, f.last_post_at,
+	f.last_error, f.error_count, f.failing_since, f.last_post_at,
 	(SELECT json_group_array(t.tag ORDER BY t.tag) FROM follow_tags t WHERE t.follow_id = f.id)`
 
 type scanner interface{ Scan(dest ...any) error }
@@ -29,7 +29,7 @@ func scanFollow(sc scanner) (model.Follow, error) {
 	err := sc.Scan(
 		&f.ID, &f.URL, &f.FeedURL, &f.Title, &f.FeedTitle, &f.Description, &f.PhotoURL, &f.Importance,
 		msTime{&f.CreatedAt}, msTime{&f.EditedAt}, &f.ETag, &f.LastModified, msTime{&f.LastFetchedAt},
-		msTime{&f.NextFetchAt}, &f.LastError, &f.ErrorCount, msTime{&f.LastPostAt},
+		msTime{&f.NextFetchAt}, &f.LastError, &f.ErrorCount, msTime{&f.FailingSince}, msTime{&f.LastPostAt},
 		jsonStrings{&f.Tags},
 	)
 	return f, err
@@ -313,7 +313,7 @@ func (s *Store) UpdateFollowSettings(ctx context.Context, f model.Follow) error 
 			}
 			if _, err := tx.ExecContext(ctx, `
 				UPDATE follows
-				SET feed_url = ?, etag = '', last_modified = '', next_fetch_at = ?, last_error = '', error_count = 0
+				SET feed_url = ?, etag = '', last_modified = '', next_fetch_at = ?, last_error = '', error_count = 0, failing_since = 0
 				WHERE id = ?`, f.FeedURL, toMS(now), f.ID); err != nil {
 				return err
 			}

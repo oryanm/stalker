@@ -630,6 +630,50 @@ func TestRecordFetchDropsUnlistedPosts(t *testing.T) {
 	}
 }
 
+func TestRecordFetchFailingSince(t *testing.T) {
+	ctx := t.Context()
+	s := openStore(t)
+	f := model.Follow{FeedURL: "https://a.example/feed"}
+	if err := s.CreateFollow(ctx, &f); err != nil {
+		t.Fatal(err)
+	}
+	t0 := time.Date(2026, 9, 27, 4, 0, 0, 0, time.UTC)
+	record := func(r FetchResult) model.Follow {
+		t.Helper()
+		r.FollowID = f.ID
+		if err := s.RecordFetch(ctx, r); err != nil {
+			t.Fatal(err)
+		}
+		got, err := s.GetFollow(ctx, f.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return got
+	}
+	if got := record(FetchResult{FetchedAt: t0, Err: "HTTP 404"}); !got.FailingSince.Equal(t0) {
+		t.Errorf("first failure: FailingSince = %v, want %v", got.FailingSince, t0)
+	}
+	if got := record(FetchResult{FetchedAt: t0.Add(6 * time.Hour), Err: "HTTP 404"}); !got.FailingSince.Equal(t0) {
+		t.Errorf("second failure: FailingSince = %v, want it kept at %v", got.FailingSince, t0)
+	}
+	if got := record(FetchResult{FetchedAt: t0.Add(9 * time.Hour), NotModified: true}); !got.FailingSince.IsZero() {
+		t.Errorf("a not-modified success should clear FailingSince, got %v", got.FailingSince)
+	}
+	record(FetchResult{FetchedAt: t0.Add(10 * time.Hour), Err: "timed out"})
+	if got := record(FetchResult{FetchedAt: t0.Add(11 * time.Hour), FeedTitle: "A"}); !got.FailingSince.IsZero() {
+		t.Errorf("a success should clear FailingSince, got %v", got.FailingSince)
+	}
+	record(FetchResult{FetchedAt: t0.Add(12 * time.Hour), Err: "HTTP 500"})
+	got, _ := s.GetFollow(ctx, f.ID)
+	got.FeedURL = "https://b.example/feed"
+	if err := s.UpdateFollowSettings(ctx, got); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := s.GetFollow(ctx, f.ID); !got.FailingSince.IsZero() {
+		t.Errorf("a new feed URL should clear FailingSince, got %v", got.FailingSince)
+	}
+}
+
 func TestRecordFetchStaleFeedURL(t *testing.T) {
 	const feedURL = "https://example.com/feed"
 	s := openStore(t)

@@ -88,6 +88,7 @@ type Follow struct {
 	NextFetchAt   time.Time
 	LastError     string    // empty when the last fetch succeeded
 	ErrorCount    int       // consecutive failures
+	FailingSince  time.Time // first failure of the current run, zero while fetches succeed
 	LastPostAt    time.Time // zero means no posts
 }
 

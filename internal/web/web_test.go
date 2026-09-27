@@ -1264,7 +1264,7 @@ func TestSettings(t *testing.T) {
 		"Follows: 2 · Tags: 1",
 		`<li data-tier="0"><span aria-hidden="true">🚄</span> Realtime: 1</li>`,
 		`<li data-tier="365"><span aria-hidden="true">☂</span> Rarely: 1</li>`,
-		`<a href="/follows/2/edit" dir="auto">Failing one</a> <span class="error-inline">Last 2 fetches failed: HTTP 503</span> <span class="age" title="Last attempt">3h</span>`,
+		`<a href="/follows/2/edit" dir="auto">Failing one</a> <span class="error-inline">Last 2 fetches failed: HTTP 503</span> <span class="age" title="Failing since">since 3h</span></li>`,
 		`<input type="radio" name="sort" value="recent" checked>`,
 		`action="/import" enctype="multipart/form-data"`,
 		`<a href="/export.opml" hx-boost="false"`,
@@ -1292,6 +1292,53 @@ func TestSettings(t *testing.T) {
 		}
 	}
 	wantStatus(t, e.post("/settings", url.Values{"sort": {"random"}}), http.StatusBadRequest)
+}
+
+func TestRecentFailuresStayQuiet(t *testing.T) {
+	e := newEnv(t)
+	ctx := context.Background()
+	fail := func(f model.Follow, at time.Time) {
+		t.Helper()
+		if err := e.st.RecordFetch(ctx, store.FetchResult{FollowID: f.ID, FetchedAt: at, NextFetchAt: now, Err: "HTTP 404 Not Found"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	withPosts := func(url string) model.Follow {
+		t.Helper()
+		f := e.createFollow(model.Follow{FeedURL: url, FeedTitle: url, Importance: model.Frequent})
+		e.recordPosts(f.ID, model.Post{GUID: "1", URL: url + "/1", Title: "Post", PublishedAt: now.Add(-48 * time.Hour)})
+		return f
+	}
+	blip := withPosts("https://blip.example/feed")
+	fail(blip, now.Add(-6*time.Hour))
+	fail(blip, now.Add(-time.Hour))
+	down := withPosts("https://down.example/feed")
+	fail(down, now.Add(-25*time.Hour))
+	fail(down, now.Add(-2*time.Hour))
+	broken := e.createFollow(model.Follow{FeedURL: "https://broken.example/feed", FeedTitle: "broken", Importance: model.Frequent})
+	fail(broken, now.Add(-time.Minute))
+
+	body := e.get("/?tier=1").Body.String()
+	row := func(id int64) string {
+		start := strings.Index(body, fmt.Sprintf(`<li id="follow-%d"`, id))
+		if start < 0 {
+			t.Fatalf("no row for follow %d", id)
+		}
+		end := strings.Index(body[start:], `<div class="posts"`)
+		return body[start : start+end]
+	}
+	if strings.Contains(row(blip.ID), `class="error"`) {
+		t.Error("a follow failing for 6h shows a warning")
+	}
+	wantContains(t, row(down.ID), `<span class="error" tabindex="0" title="Last 2 fetches failed: HTTP 404 Not Found">`)
+	wantContains(t, row(broken.ID), `<span class="error" tabindex="0" title="Last fetch failed: HTTP 404 Not Found">`)
+
+	// Settings still lists every failing follow, saying which ones are not flagged yet
+	body = e.get("/settings").Body.String()
+	wantContains(t, body,
+		`>https://blip.example/feed</a> <span class="error-inline">Last 2 fetches failed: HTTP 404 Not Found</span> <span class="age" title="Failing since">since 6h</span> <span class="hint">(retrying, not shown on its row yet)</span>`,
+		`>https://down.example/feed</a> <span class="error-inline">Last 2 fetches failed: HTTP 404 Not Found</span> <span class="age" title="Failing since">since 1d</span></li>`,
+	)
 }
 
 func TestTheme(t *testing.T) {

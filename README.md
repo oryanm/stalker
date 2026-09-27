@@ -161,7 +161,10 @@ in `internal/web/theme.go`.
   reschedules follows right away. The refresh button and newly added follows ignore it.
 - Requests are conditional (`If-None-Match`, `If-Modified-Since`); an unchanged feed costs one `304`.
 - After consecutive failures the delay doubles from the base (up to 64 times it), capped at 24 hours plus jitter, and never
-  sooner than a `Retry-After` the server sent. One success resets it. The row shows the error until then.
+  sooner than a `Retry-After` the server sent. One success resets it.
+- A follow's row only shows a warning once it has been failing for 24 hours (straight away if it has never had a post),
+  so a feed that is down for a few hours stays quiet. YouTube's feeds sometimes return false 404s for hours at a time.
+  Settings lists every failing follow, including the ones not flagged yet.
 - Up to 6 feeds are fetched at once, and at most 2 per host with 500 ms between requests, which keeps dozens of YouTube feeds
   from tripping rate limits. Each request times out after 30 seconds.
 - The refresh button on a row fetches it immediately, whatever its schedule.

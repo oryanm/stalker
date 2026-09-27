@@ -100,14 +100,15 @@ func (s *Store) RecordFetch(ctx context.Context, r FetchResult) error {
 		case r.Err != "":
 			res, err := tx.ExecContext(ctx, `
 				UPDATE follows
-				SET last_error = ?, error_count = error_count + 1, last_fetched_at = ?, next_fetch_at = ?
-				WHERE id = ?`, r.Err, fetchedMS, nextMS, r.FollowID)
+				SET last_error = ?1, error_count = error_count + 1, last_fetched_at = ?2, next_fetch_at = ?3,
+					failing_since = iif(failing_since = 0, ?2, failing_since)
+				WHERE id = ?4`, r.Err, fetchedMS, nextMS, r.FollowID)
 			return affectedOne(res, err)
 		case r.NotModified:
 			res, err := tx.ExecContext(ctx, `
 				UPDATE follows
 				SET etag = iif(?1 = '', etag, ?1), last_modified = iif(?2 = '', last_modified, ?2),
-					last_error = '', error_count = 0, last_fetched_at = ?3, next_fetch_at = ?4
+					last_error = '', error_count = 0, failing_since = 0, last_fetched_at = ?3, next_fetch_at = ?4
 				WHERE id = ?5`, r.ETag, r.LastModified, fetchedMS, nextMS, r.FollowID)
 			return affectedOne(res, err)
 		}
@@ -120,7 +121,7 @@ func (s *Store) RecordFetch(ctx context.Context, r FetchResult) error {
 				description = iif(?4 = '', description, ?4),
 				url = iif(?5 != '' AND (url = '' OR url = feed_url), ?5, url),
 				photo_url = iif(?6 = '', photo_url, ?6),
-				last_error = '', error_count = 0, last_fetched_at = ?7, next_fetch_at = ?8
+				last_error = '', error_count = 0, failing_since = 0, last_fetched_at = ?7, next_fetch_at = ?8
 			WHERE id = ?9`,
 			r.ETag, r.LastModified, strings.TrimSpace(r.FeedTitle), strings.TrimSpace(r.Description),
 			strings.TrimSpace(r.SiteURL), strings.TrimSpace(r.PhotoURL), fetchedMS, nextMS, r.FollowID)

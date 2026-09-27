@@ -1253,8 +1253,9 @@ button:disabled {
 
 .controls .edit,
 .controls .link {
-  padding: 0.12rem 0.55rem;
-  font-size: 0.8rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
   color: var(--ink-soft);
   --key-up: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 var(--cap-side), 0 2px 0 var(--cap-side),
     0 3px 0 var(--cap-deep), 0 4px 5px rgba(0, 0, 0, 0.45);

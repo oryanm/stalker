@@ -28,6 +28,7 @@ func (s *Server) parseTemplates() error {
 		"homeURL":     func(tag string) string { return homeURL(tag, nil) },
 		"tierURL":     func(tag string, tier model.Importance) string { return homeURL(tag, &tier) },
 		"errorText":   errorSummary,
+		"shownError":  shownError,
 		"withNow":     withNow,
 		"tierSelect":  tierSelect,
 		"theme":       s.currentTheme,

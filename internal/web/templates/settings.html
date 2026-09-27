@@ -59,7 +59,7 @@
 {{- if .Failing}}
 <ul class="failing">
 {{- range .Failing}}
-<li><a href="/follows/{{.ID}}/edit" dir="auto">{{.DisplayTitle}}</a> <span class="error-inline">{{errorText .}}</span>{{with timeAgo .LastFetchedAt $.Now}} <span class="age" title="Last attempt">{{.}}</span>{{end}}</li>
+<li><a href="/follows/{{.ID}}/edit" dir="auto">{{.DisplayTitle}}</a> <span class="error-inline">{{errorText .}}</span>{{with timeAgo .FailingSince $.Now}} <span class="age" title="Failing since">since {{.}}</span>{{end}}{{if not (shownError . $.Now)}} <span class="hint">(retrying, not shown on its row yet)</span>{{end}}</li>
 {{- end}}
 </ul>
 {{- else}}
