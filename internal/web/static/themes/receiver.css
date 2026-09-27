@@ -1093,6 +1093,25 @@ button:disabled {
   transform: rotate(90deg);
 }
 
+/* the follow's picture sits in a small bezel; without one, its initial is printed on the glass */
+.head .icon {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--cap-side), 0 1px 0 2px rgba(255, 255, 255, 0.06);
+  object-fit: cover;
+}
+
+.head .icon.none {
+  display: inline-grid;
+  place-items: center;
+  background: linear-gradient(var(--glass-top), var(--glass-bottom));
+  box-shadow: var(--well);
+  color: var(--label);
+  font: 600 0.8rem/1 var(--narrow);
+}
+
 .head .title {
   min-width: 0;
   max-width: 100%;
@@ -2011,7 +2030,7 @@ details.delete p {
 
   /* title and age take the first line; the trace and keys drop to the second */
   .head .title {
-    flex: 1 1 calc(100% - 8rem);
+    flex: 1 1 calc(100% - 10.25rem);
   }
 
   .scope {

@@ -343,6 +343,33 @@ main {
   gap: 0.2rem 0.6rem;
 }
 
+/* the follow's picture, or its initial on a badge */
+.head .icon {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.head .icon.none {
+  display: inline-grid;
+  place-items: center;
+  background: var(--m-badge);
+  color: var(--badge-text);
+  font-size: 0.75rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.head.age-h .icon.none {
+  background: var(--h-badge);
+}
+
+.head.age-d .icon.none {
+  background: var(--d-badge);
+}
+
 .head .title {
   min-width: 0;
   max-width: 100%;

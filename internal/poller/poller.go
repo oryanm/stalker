@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/oryanm/stalker/internal/discover"
 	"github.com/oryanm/stalker/internal/events"
 	"github.com/oryanm/stalker/internal/feed"
 	"github.com/oryanm/stalker/internal/model"
@@ -36,6 +37,8 @@ const (
 	maxDoublings = 6
 	// maxErrorRunes keeps a stored error short enough for a tooltip.
 	maxErrorRunes = 300
+	// iconRefresh is how often the home page of a feed without an image is searched for an icon.
+	iconRefresh = 7 * 24 * time.Hour
 )
 
 type Options struct {
@@ -59,6 +62,8 @@ type Poller struct {
 	fetchTimeout time.Duration
 	// record stores a result; tests swap it to simulate write failures
 	record func(context.Context, store.FetchResult) error
+	// findIcon searches a home page for an icon, see discover.Icon
+	findIcon func(ctx context.Context, pageURL string) (string, error)
 
 	kick    chan struct{}
 	running atomic.Bool
@@ -105,9 +110,12 @@ func New(st *store.Store, fc *feed.Client, ev *events.Broker, opts Options) *Pol
 		jitter:       opts.Jitter,
 		fetchTimeout: fetchTimeout,
 		record:       st.RecordFetch,
-		kick:         make(chan struct{}, 1),
-		inflight:     make(map[int64]*call),
-		held:         make(map[int64]time.Time),
+		findIcon: func(ctx context.Context, pageURL string) (string, error) {
+			return discover.Icon(ctx, fc, pageURL)
+		},
+		kick:     make(chan struct{}, 1),
+		inflight: make(map[int64]*call),
+		held:     make(map[int64]time.Time),
 	}
 }
 
@@ -389,7 +397,33 @@ func (p *Poller) fetchOne(ctx context.Context, f model.Follow) (outcome, error) 
 		return unrecorded, errors.Join(fetchErr, recordErr)
 	}
 	p.setHeld(f.ID, time.Time{})
+	if fetchErr == nil && f.PhotoURL == "" && res.ImageURL == "" && p.now().Sub(f.IconCheckedAt) >= iconRefresh {
+		p.refreshIcon(ctx, f.ID)
+	}
 	return recorded, fetchErr
+}
+
+// refreshIcon searches the home page of a follow whose feed has no image for an icon.
+func (p *Poller) refreshIcon(ctx context.Context, id int64) {
+	// read again: the fetch just recorded may have replaced a placeholder site URL
+	f, err := p.st.GetFollow(ctx, id)
+	if err != nil {
+		return
+	}
+	log := slog.With("follow", f.ID, "site", f.URL)
+	ictx, cancel := context.WithTimeout(ctx, p.fetchTimeout)
+	icon, err := p.findIcon(ictx, cmp.Or(f.URL, f.FeedURL))
+	cancel()
+	if ctx.Err() != nil {
+		return
+	}
+	if err != nil {
+		// kept until the next search: a site that blocks bots should not be asked again on every fetch
+		log.Debug("icon search failed", "err", err)
+	}
+	if err := p.st.SetIcon(ctx, f.ID, f.URL, icon, p.now()); err != nil && !errors.Is(err, store.ErrNotFound) {
+		log.Error("poller: record icon", "err", err)
+	}
 }
 
 func isContextErr(err error) bool {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"net/http"
 	"net/http/httptest"
@@ -225,6 +226,73 @@ func TestFetchNowStoresPosts(t *testing.T) {
 	}
 	if p.IsFetching(f.ID) {
 		t.Error("IsFetching after FetchNow returned")
+	}
+}
+
+func TestFetchNowFindsIcon(t *testing.T) {
+	const image = `<image><url>https://img.example/logo.png</url></image>`
+	tests := []struct {
+		name     string
+		feed     string // replaces the default feed's <description>
+		status   int
+		iconErr  error
+		want     []string // pages searched: now, an hour later, then iconRefresh later
+		wantIcon string
+	}{
+		{
+			name:     "feed without an image",
+			want:     []string{"https://news.example/", "", "https://news.example/"},
+			wantIcon: "https://news.example/icon.png",
+		},
+		{name: "feed with an image", feed: image, want: []string{"", "", ""}},
+		{name: "failed fetch", status: http.StatusInternalServerError, want: []string{"", "", ""}},
+		{
+			name:    "failed search waits for the next refresh",
+			iconErr: errors.New("HTTP 403"),
+			want:    []string{"https://news.example/", "", "https://news.example/"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			st := openStore(t)
+			s := newSite()
+			s.handle = func(w http.ResponseWriter, r *http.Request) {
+				if tt.status != 0 {
+					w.WriteHeader(tt.status)
+					return
+				}
+				w.Header().Set("Content-Type", "application/rss+xml")
+				xml := feedXML("news", time.Now(), 1)
+				_, _ = io.WriteString(w, strings.Replace(xml, "<description>About news</description>", tt.feed, 1))
+			}
+			srv := httptest.NewServer(s)
+			defer srv.Close()
+			clk := newClock()
+			p, _ := newPoller(st, nil, Options{Now: clk.Now})
+			var searched string
+			p.findIcon = func(_ context.Context, pageURL string) (string, error) {
+				searched = pageURL
+				if tt.iconErr != nil {
+					return "", tt.iconErr
+				}
+				return "https://news.example/icon.png", nil
+			}
+			f := addFollow(t, st, model.Follow{URL: srv.URL + "/news", FeedURL: srv.URL + "/news"})
+
+			var got []string
+			for _, wait := range []time.Duration{0, time.Hour, iconRefresh} {
+				clk.Add(wait)
+				searched = ""
+				_ = p.FetchNow(t.Context(), f.ID)
+				got = append(got, searched)
+			}
+			if fmt.Sprint(got) != fmt.Sprint(tt.want) {
+				t.Errorf("pages searched = %q, want %q", got, tt.want)
+			}
+			if icon := getFollow(t, st, f.ID).IconURL; icon != tt.wantIcon {
+				t.Errorf("IconURL = %q, want %q", icon, tt.wantIcon)
+			}
+		})
 	}
 }
 

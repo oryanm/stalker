@@ -1,8 +1,8 @@
 # stalker
 
 A personal, self-hosted follow tracker in the spirit of [Fraidycat](https://fraidyc.at). You follow blogs, YouTube channels,
-subreddits and anything else with an RSS, Atom or JSON feed, and stalker shows each follow as one row: when it last posted, a
-sparkline of its activity and the titles of its latest posts. Follows are grouped by tag and by how closely you watch them
+subreddits and anything else with an RSS, Atom or JSON feed, and stalker shows each follow as one row: its icon, when it last
+posted, a sparkline of its activity and the titles of its latest posts. Follows are grouped by tag and by how closely you watch them
 (importance tiers), so a quiet friend's blog is not buried under a busy news site.
 
 It is a single Go binary with an embedded SQLite database and a server-rendered UI (htmx, live updates over SSE). It is built

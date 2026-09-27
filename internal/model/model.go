@@ -75,7 +75,8 @@ type Follow struct {
 	Title       string // user override, empty means use FeedTitle
 	FeedTitle   string // title reported by the feed
 	Description string
-	PhotoURL    string
+	PhotoURL    string // the feed's own image
+	IconURL     string // found on the home page, shown when the feed has no image
 	Importance  Importance
 	Tags        []string // sorted and deduplicated, never contains HomeTag implicitly
 	CreatedAt   time.Time
@@ -90,6 +91,15 @@ type Follow struct {
 	ErrorCount    int       // consecutive failures
 	FailingSince  time.Time // first failure of the current run, zero while fetches succeed
 	LastPostAt    time.Time // zero means no posts
+	IconCheckedAt time.Time // when the home page was last searched for an icon, zero means never
+}
+
+// Icon is the follow's picture: the feed's image, else the home page's icon.
+func (f Follow) Icon() string {
+	if f.PhotoURL != "" {
+		return f.PhotoURL
+	}
+	return f.IconURL
 }
 
 // DisplayTitle is the user title, then the feed title, then the host name.

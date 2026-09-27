@@ -505,3 +505,30 @@ func TestDial(t *testing.T) {
 		t.Errorf("a follow without posts got a station:\n%s", got)
 	}
 }
+
+func TestRowIcon(t *testing.T) {
+	tests := []struct {
+		name        string
+		follow      model.Follow
+		icon, first string
+	}{
+		{"feed image first", model.Follow{Title: "blog", PhotoURL: "https://a.example/p.png", IconURL: "https://a.example/i.png"}, "https://a.example/p.png", "B"},
+		{"home page icon", model.Follow{Title: "Blog", IconURL: "https://a.example/i.png"}, "https://a.example/i.png", "B"},
+		{"http upgraded for the CSP", model.Follow{Title: "Blog", IconURL: "http://a.example/i.png"}, "https://a.example/i.png", "B"},
+		{"unsafe scheme dropped", model.Follow{Title: "Blog", IconURL: "javascript:alert(1)"}, "", "B"},
+		{"initial skips symbols", model.Follow{Title: "📹 @ viva"}, "", "V"},
+		{"initial of the host", model.Follow{FeedURL: "https://www.example.com/feed"}, "", "E"},
+		{"no letters", model.Follow{Title: "📹"}, "", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := row{Follow: tt.follow}
+			if got := r.Icon(); got != tt.icon {
+				t.Errorf("Icon() = %q, want %q", got, tt.icon)
+			}
+			if got := r.Initial(); got != tt.first {
+				t.Errorf("Initial() = %q, want %q", got, tt.first)
+			}
+		})
+	}
+}

@@ -62,6 +62,32 @@
     }
   });
 
+  // an icon that fails to load (gone, or served over http only) gives way to the title's initial
+  function brokenIcon(img) {
+    var initial = document.createElement("span");
+    initial.className = "icon none";
+    initial.setAttribute("aria-hidden", "true");
+    initial.textContent = img.dataset.initial || "";
+    img.replaceWith(initial);
+  }
+
+  document.addEventListener(
+    "error",
+    function (e) {
+      if (e.target.matches && e.target.matches("img.icon")) {
+        brokenIcon(e.target);
+      }
+    },
+    true
+  );
+
+  // this deferred script may run after some icons already failed
+  document.querySelectorAll("img.icon").forEach(function (img) {
+    if (img.complete && img.naturalWidth === 0) {
+      brokenIcon(img);
+    }
+  });
+
   // the tuning dial's needle follows the channel being pointed at or focused
   var tuned = null;
 

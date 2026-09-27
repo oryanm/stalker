@@ -19,7 +19,7 @@ var errNoFeedURL = errors.New("store: follow has no feed URL")
 const followColumns = `
 	f.id, f.url, f.feed_url, f.title, f.feed_title, f.description, f.photo_url, f.importance,
 	f.created_at, f.edited_at, f.etag, f.last_modified, f.last_fetched_at, f.next_fetch_at,
-	f.last_error, f.error_count, f.failing_since, f.last_post_at,
+	f.last_error, f.error_count, f.failing_since, f.last_post_at, f.icon_url, f.icon_checked_at,
 	(SELECT json_group_array(t.tag ORDER BY t.tag) FROM follow_tags t WHERE t.follow_id = f.id)`
 
 type scanner interface{ Scan(dest ...any) error }
@@ -30,7 +30,7 @@ func scanFollow(sc scanner) (model.Follow, error) {
 		&f.ID, &f.URL, &f.FeedURL, &f.Title, &f.FeedTitle, &f.Description, &f.PhotoURL, &f.Importance,
 		msTime{&f.CreatedAt}, msTime{&f.EditedAt}, &f.ETag, &f.LastModified, msTime{&f.LastFetchedAt},
 		msTime{&f.NextFetchAt}, &f.LastError, &f.ErrorCount, msTime{&f.FailingSince}, msTime{&f.LastPostAt},
-		jsonStrings{&f.Tags},
+		&f.IconURL, msTime{&f.IconCheckedAt}, jsonStrings{&f.Tags},
 	)
 	return f, err
 }
@@ -217,7 +217,7 @@ func prepareNewFollow(f model.Follow, now time.Time) (model.Follow, error) {
 			*t = now
 		}
 	}
-	for _, t := range []*time.Time{&f.CreatedAt, &f.EditedAt, &f.LastFetchedAt, &f.NextFetchAt, &f.LastPostAt} {
+	for _, t := range []*time.Time{&f.CreatedAt, &f.EditedAt, &f.LastFetchedAt, &f.NextFetchAt, &f.LastPostAt, &f.IconCheckedAt} {
 		*t = asStored(*t)
 	}
 	return f, nil
@@ -235,13 +235,14 @@ func insertFollow(ctx context.Context, tx *sql.Tx, f model.Follow, feeds map[str
 	err := tx.QueryRowContext(ctx, `
 		INSERT INTO follows (
 			url, feed_url, title, feed_title, description, photo_url, importance, created_at, edited_at,
-			etag, last_modified, last_fetched_at, next_fetch_at, last_error, error_count, last_post_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			etag, last_modified, last_fetched_at, next_fetch_at, last_error, error_count, last_post_at,
+			icon_url, icon_checked_at
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (feed_url) DO NOTHING
 		RETURNING id`,
 		f.URL, f.FeedURL, f.Title, f.FeedTitle, f.Description, f.PhotoURL, int(f.Importance),
 		toMS(f.CreatedAt), toMS(f.EditedAt), f.ETag, f.LastModified, toMS(f.LastFetchedAt),
-		toMS(f.NextFetchAt), f.LastError, f.ErrorCount, toMS(f.LastPostAt),
+		toMS(f.NextFetchAt), f.LastError, f.ErrorCount, toMS(f.LastPostAt), f.IconURL, toMS(f.IconCheckedAt),
 	).Scan(&id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, nil
@@ -280,7 +281,8 @@ func normalizeTags(tags []string) []string {
 // and schedules an immediate fetch. Returns ErrNotFound or ErrDuplicate.
 //
 // A zero EditedAt defaults to now. Changing FeedURL also clears the error
-// state; posts are kept since a moved feed usually keeps its GUIDs. Moving the
+// state and the feed's image; posts are kept since a moved feed usually keeps
+// its GUIDs. Changing either URL clears the home page's icon. Moving the
 // follow to a more important tier schedules it for now unless it is due
 // sooner, so it does not wait out the old tier's longer interval.
 func (s *Store) UpdateFollowSettings(ctx context.Context, f model.Follow) error {
@@ -293,10 +295,10 @@ func (s *Store) UpdateFollowSettings(ctx context.Context, f model.Follow) error 
 		edited = now
 	}
 	err := s.inTx(ctx, func(tx *sql.Tx) error {
-		var oldFeedURL string
+		var oldURL, oldFeedURL string
 		var oldImportance model.Importance
-		err := tx.QueryRowContext(ctx, `SELECT feed_url, importance FROM follows WHERE id = ?`, f.ID).
-			Scan(&oldFeedURL, &oldImportance)
+		err := tx.QueryRowContext(ctx, `SELECT url, feed_url, importance FROM follows WHERE id = ?`, f.ID).
+			Scan(&oldURL, &oldFeedURL, &oldImportance)
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrNotFound
 		}
@@ -313,8 +315,15 @@ func (s *Store) UpdateFollowSettings(ctx context.Context, f model.Follow) error 
 			}
 			if _, err := tx.ExecContext(ctx, `
 				UPDATE follows
-				SET feed_url = ?, etag = '', last_modified = '', next_fetch_at = ?, last_error = '', error_count = 0, failing_since = 0
+				SET feed_url = ?, etag = '', last_modified = '', next_fetch_at = ?, last_error = '', error_count = 0, failing_since = 0,
+					photo_url = ''
 				WHERE id = ?`, f.FeedURL, toMS(now), f.ID); err != nil {
+				return err
+			}
+		}
+		if f.URL != oldURL || f.FeedURL != oldFeedURL {
+			// the home page is looked up again on the next fetch
+			if _, err := tx.ExecContext(ctx, `UPDATE follows SET icon_url = '', icon_checked_at = 0 WHERE id = ?`, f.ID); err != nil {
 				return err
 			}
 		}
@@ -361,6 +370,37 @@ func (s *Store) DeleteFollow(ctx context.Context, id int64) error {
 	}
 	if err != nil {
 		return fmt.Errorf("store: delete follow %d: %w", id, err)
+	}
+	return nil
+}
+
+// SetIcon records that the home page of a follow whose URL was siteURL was
+// searched for an icon at checkedAt. A non-empty iconURL replaces the stored
+// icon; an empty one keeps it, so a page that failed to load does not lose it.
+// Nothing is stored when the follow's URL has changed since. Returns
+// ErrNotFound when the id does not exist.
+func (s *Store) SetIcon(ctx context.Context, id int64, siteURL, iconURL string, checkedAt time.Time) error {
+	err := s.inTx(ctx, func(tx *sql.Tx) error {
+		var url string
+		err := tx.QueryRowContext(ctx, `SELECT url FROM follows WHERE id = ?`, id).Scan(&url)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrNotFound
+		case err != nil:
+			return err
+		case url != siteURL:
+			return nil
+		}
+		_, err = tx.ExecContext(ctx, `
+			UPDATE follows SET icon_url = iif(?1 = '', icon_url, ?1), icon_checked_at = ?2 WHERE id = ?3`,
+			strings.TrimSpace(iconURL), toMS(checkedAt), id)
+		return err
+	})
+	if errors.Is(err, ErrNotFound) {
+		return ErrNotFound
+	}
+	if err != nil {
+		return fmt.Errorf("store: set icon %d: %w", id, err)
 	}
 	return nil
 }

@@ -234,6 +234,27 @@ func (r row) LastPost() time.Time {
 // Link is the title link: the site, else the feed, else nothing.
 func (r row) Link() string { return cmp.Or(safeURL(r.Follow.URL), safeURL(r.Follow.FeedURL)) }
 
+// Icon is the follow's picture over https, the only scheme the CSP lets images
+// load from besides our own; empty when it has none.
+func (r row) Icon() string {
+	u, err := parseHTTPURL(r.Follow.Icon())
+	if err != nil {
+		return ""
+	}
+	u.Scheme = "https"
+	return u.String()
+}
+
+// Initial stands in for a missing icon: the title's first letter or digit.
+func (r row) Initial() string {
+	for _, c := range r.Follow.DisplayTitle() {
+		if unicode.IsLetter(c) || unicode.IsNumber(c) {
+			return string(unicode.ToUpper(c))
+		}
+	}
+	return ""
+}
+
 // postView is a post with the time its age is measured against.
 type postView struct {
 	model.Post

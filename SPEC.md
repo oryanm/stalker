@@ -42,10 +42,16 @@ genuinely wrong, make the smallest change, update every caller, and report it.
   (`model.HomeTag`); follows tagged `🏠` explicitly also show there. Tag tabs: 🏠 first, then the other tags sorted.
 - Within a tag, tier sub-tabs are shown for tiers that have follows (plus the selected tier when it is empty). The default tier is the most
   important tier present in that tag.
-- A follow row shows: title (links to the site), how long ago its latest post was (`timeAgo` below), an activity sparkline, the
+- A follow row shows: an icon, title (links to the site), how long ago its latest post was (`timeAgo` below), an activity sparkline, the
   titles of its latest posts (each linked, each with its own age), an error marker when the last fetch failed, and edit/refresh
   controls. Rows are sorted by latest post, newest first. Sort options are "Recent posts" (default), "Recently followed" and
   "A to Z", stored as a setting.
+- Icons: the feed's own image (`PhotoURL`: RSS `<image>`, Atom logo/icon, JSON Feed icon), else one found on the home page
+  (`IconURL`, see `discover.Icon`: a YouTube channel's `og:image` avatar, the page's `<link rel="icon">`/apple-touch-icon
+  nearest above 32px, else `/favicon.ico` when it is an image). The poller searches the home page after a successful fetch
+  of a feed without an image, at most every 7 days; editing either URL clears the icon so it is searched again. Icons are
+  hotlinked over https (the CSP's `img-src`) and sent no referrer (`Referrer-Policy: same-origin`); one that fails to load,
+  or a follow without one, shows the title's initial instead.
 - Freshness colour classes (on the row and on each post): `age-h` if at most 3 days old, `age-d` if at most 30 days, else `age-M`.
   Following Fraidycat, age-h is dark green, age-d is cyan/teal, age-M is a muted light brown. A tag tab gets the colour of the
   newest post among that tag's Realtime follows.

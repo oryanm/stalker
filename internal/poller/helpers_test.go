@@ -42,14 +42,16 @@ func openStore(t *testing.T) *store.Store {
 
 // newPoller returns a poller whose client goes through rt (the default
 // transport, allowed to reach httptest servers, when nil) without per-host
-// throttling.
+// throttling, and that finds no icons without asking any site.
 func newPoller(st *store.Store, rt http.RoundTripper, opts Options) (*Poller, *events.Broker) {
 	if opts.Jitter == nil {
 		opts.Jitter = func() float64 { return 0 }
 	}
 	fc := feed.NewClient(feed.Options{Transport: rt, HostSpacing: -1, HostParallel: 64, AllowPrivateNetworks: true})
 	ev := events.NewBroker()
-	return New(st, fc, ev, opts), ev
+	p := New(st, fc, ev, opts)
+	p.findIcon = func(context.Context, string) (string, error) { return "", nil }
+	return p, ev
 }
 
 func addFollow(t *testing.T, st *store.Store, f model.Follow) model.Follow {

@@ -61,6 +61,8 @@ func TestCreateFollowRoundTrip(t *testing.T) {
 				LastError:     "HTTP 500",
 				ErrorCount:    3,
 				LastPostAt:    t0.Add(-48 * time.Hour),
+				IconURL:       "https://example.com/favicon.ico",
+				IconCheckedAt: time.Date(2026, 8, 30, 7, 0, 0, 999999, est),
 			},
 			want: model.Follow{
 				URL: "https://example.com/", FeedURL: "https://example.com/rss", Title: "Mine",
@@ -75,6 +77,8 @@ func TestCreateFollowRoundTrip(t *testing.T) {
 				LastError:     "HTTP 500",
 				ErrorCount:    3,
 				LastPostAt:    t0.Add(-48 * time.Hour),
+				IconURL:       "https://example.com/favicon.ico",
+				IconCheckedAt: time.Date(2026, 8, 30, 12, 0, 0, 0, time.UTC),
 			},
 		},
 	}
@@ -263,6 +267,7 @@ func TestUpdateFollowSettings(t *testing.T) {
 		Tags: []string{"old"}, CreatedAt: t0.Add(-time.Hour), EditedAt: t0.Add(-time.Hour),
 		ETag: "etag", LastModified: "lm", LastFetchedAt: t0.Add(-time.Minute), NextFetchAt: t0.Add(3 * time.Hour),
 		LastError: "HTTP 503", ErrorCount: 2, LastPostAt: t0.Add(-24 * time.Hour),
+		IconURL: "https://example.com/favicon.ico", IconCheckedAt: t0.Add(-time.Hour),
 	}
 	tests := []struct {
 		name    string
@@ -279,7 +284,13 @@ func TestUpdateFollowSettings(t *testing.T) {
 			want: func(f *model.Follow) {
 				f.URL, f.Title, f.Importance = "https://example.com/blog", "New", model.Occasional
 				f.Tags, f.EditedAt = []string{"a", "b"}, later
+				f.IconURL, f.IconCheckedAt = "", time.Time{}
 			},
+		},
+		{
+			name: "same URLs keep the icon",
+			edit: func(f *model.Follow) { f.Title, f.EditedAt = "New", later },
+			want: func(f *model.Follow) { f.Title, f.EditedAt = "New", later },
 		},
 		{
 			name: "more important tier is fetched now",
@@ -292,6 +303,7 @@ func TestUpdateFollowSettings(t *testing.T) {
 			want: func(f *model.Follow) {
 				f.FeedURL, f.EditedAt = "https://example.com/atom", later
 				f.ETag, f.LastModified, f.NextFetchAt, f.LastError, f.ErrorCount = "", "", t0, "", 0
+				f.PhotoURL, f.IconURL, f.IconCheckedAt = "", "", time.Time{}
 			},
 		},
 		{
@@ -466,6 +478,39 @@ func TestSetNextFetch(t *testing.T) {
 	}
 	if err := st.SetNextFetch(ctx, nil); err != nil {
 		t.Errorf("SetNextFetch(nil) = %v", err)
+	}
+}
+
+func TestSetIcon(t *testing.T) {
+	checked := t0.Add(-time.Minute)
+	tests := []struct {
+		name     string
+		siteURL  string
+		iconURL  string
+		want     string
+		wantTime time.Time
+	}{
+		{"found", "https://example.com/", " https://example.com/new.png ", "https://example.com/new.png", checked},
+		{"none found keeps the old icon", "https://example.com/", "", "https://example.com/old.png", checked},
+		{"site URL edited since", "https://moved.example/", "https://moved.example/icon.png", "https://example.com/old.png", time.Time{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := openStore(t)
+			f := mustCreate(t, s, model.Follow{
+				URL: "https://example.com/", FeedURL: "https://example.com/feed", IconURL: "https://example.com/old.png",
+			})
+			if err := s.SetIcon(t.Context(), f.ID, tt.siteURL, tt.iconURL, checked); err != nil {
+				t.Fatal(err)
+			}
+			got := mustGet(t, s, f.ID)
+			if got.IconURL != tt.want || !got.IconCheckedAt.Equal(tt.wantTime) {
+				t.Errorf("icon = %q checked %v, want %q checked %v", got.IconURL, got.IconCheckedAt, tt.want, tt.wantTime)
+			}
+		})
+	}
+	if err := openStore(t).SetIcon(t.Context(), 999, "", "https://example.com/i.png", checked); !errors.Is(err, ErrNotFound) {
+		t.Errorf("SetIcon(unknown id) = %v, want ErrNotFound", err)
 	}
 }
 
