@@ -421,7 +421,7 @@ func TestSecurityHeaders(t *testing.T) {
 	want := map[string]string{
 		"Content-Security-Policy": "default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'",
 		"X-Content-Type-Options":  "nosniff",
-		"Referrer-Policy":         "no-referrer",
+		"Referrer-Policy":         "same-origin",
 	}
 	unauthenticated := httptest.NewRecorder()
 	e.h.ServeHTTP(unauthenticated, httptest.NewRequest(http.MethodGet, "/", nil))

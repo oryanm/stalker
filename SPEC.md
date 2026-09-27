@@ -88,7 +88,7 @@ Routes (all behind basic auth except `/healthz` and `/static/`):
 
 Security (it runs on a VPS): basic auth with constant-time compare; `http.CrossOriginProtection` (Go 1.25+) on the mux; CSP
 `default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'` (so no inline
-scripts, styles or event handlers); `X-Content-Type-Options: nosniff`; `Referrer-Policy: no-referrer`. Post titles and all feed
+scripts, styles or event handlers); `X-Content-Type-Options: nosniff`; `Referrer-Policy: same-origin`. Post titles and all feed
 data are text only, never raw HTML. External links get `rel="noopener noreferrer"` and open in a new tab. Upload size capped
 (5 MiB).
 
