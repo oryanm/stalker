@@ -363,7 +363,7 @@ input[type="file"]::file-selector-button {
   text-decoration: none;
   text-shadow: none;
   cursor: pointer;
-  transition: transform 0.07s ease-out, box-shadow 0.07s ease-out, background 0.07s;
+  transition: transform 0.07s ease-out, box-shadow 0.07s ease-out, background 0.07s, text-shadow 0.25s ease-out;
   user-select: none;
 }
 
@@ -435,6 +435,27 @@ button.danger {
 button.danger:hover {
   background: linear-gradient(oklch(from var(--error) calc(l + 0.1) c h), oklch(from var(--error) calc(l + 0.03) c h) 60%, var(--error));
   color: #fff;
+}
+
+/* a hovered key's legend glows; lit keys keep their own light */
+.actions a:hover,
+.sort button:not(.selected):hover,
+button:not(.primary, .selected, .danger):hover,
+.button:not(.primary):hover,
+.controls .edit:hover {
+  text-shadow: 0 0 3px oklch(from var(--readout) l c h / 0.9), 0 0 9px oklch(from var(--lit) l c h / 0.8),
+    0 0 18px oklch(from var(--lit) l c h / 0.45);
+}
+
+.controls svg {
+  transition: filter 0.25s ease-out;
+}
+
+.controls .edit:hover svg,
+.controls .link:hover svg,
+.toggle:not([aria-expanded="true"]):hover svg {
+  filter: drop-shadow(0 0 1.5px oklch(from var(--readout) l c h / 0.95)) drop-shadow(0 0 4px oklch(from var(--lit) l c h / 0.9))
+    drop-shadow(0 0 9px oklch(from var(--lit) l c h / 0.5));
 }
 
 button:disabled {
@@ -1047,7 +1068,7 @@ button:disabled {
 }
 
 .toggle svg {
-  transition: transform 0.26s cubic-bezier(0.34, 1.7, 0.5, 1);
+  transition: transform 0.26s cubic-bezier(0.34, 1.7, 0.5, 1), filter 0.25s ease-out;
 }
 
 .toggle:hover {
@@ -1273,6 +1294,10 @@ button:disabled {
   background: radial-gradient(ellipse 80% 70% at 50% 45%, var(--lit-hi), var(--lit) 65%, var(--lit-lo));
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 0 var(--cap-deep), 0 0 10px 1px oklch(from var(--lit) l c h / 0.35);
   color: var(--on-lit);
+}
+
+.follow:has(.posts[data-open="edit"]:not(:empty)) .controls .edit svg {
+  filter: none;
 }
 
 /* latest posts, on one line like Fraidycat */

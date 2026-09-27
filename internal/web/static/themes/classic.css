@@ -304,6 +304,15 @@ main {
   font-weight: bold;
 }
 
+.sort button {
+  transition: text-shadow 0.25s ease-out;
+}
+
+.sort button:hover,
+.sort button:focus-visible {
+  text-shadow: 0 0 6px color-mix(in srgb, var(--pink) 70%, transparent), 0 0 14px color-mix(in srgb, var(--pink) 35%, transparent);
+}
+
 /* follow rows */
 
 .follows {
@@ -493,6 +502,21 @@ main {
   color: var(--pink);
 }
 
+/* hovered controls glow pink */
+.controls svg {
+  transition: filter 0.25s ease-out;
+}
+
+.controls .edit:hover svg,
+.controls .edit:focus-visible svg,
+.controls .link:hover svg,
+.controls .link:focus-visible svg,
+.toggle:hover svg,
+.toggle:focus-visible svg {
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--pink) 85%, transparent))
+    drop-shadow(0 0 6px color-mix(in srgb, var(--pink) 45%, transparent));
+}
+
 /* arrow that expands a follow's recent posts */
 
 .toggle {
@@ -513,7 +537,7 @@ main {
 }
 
 .toggle svg {
-  transition: transform 0.15s;
+  transition: transform 0.15s, filter 0.25s ease-out;
 }
 
 .toggle[aria-expanded="true"] svg {
