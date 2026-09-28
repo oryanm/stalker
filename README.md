@@ -145,6 +145,27 @@ its latest post. **Classic** is the original Fraidycat-style list and follows yo
 A theme is a single stylesheet over the same HTML: add `internal/web/static/themes/<id>.css` and an entry in the `themes` list
 in `internal/web/theme.go`.
 
+## Keyboard shortcuts
+
+Press `?` for the list. The cursor is ordinary keyboard focus, so `Cmd+Enter` or `Ctrl+Enter` opens a link in the background.
+
+| Key                   | Does                                                         |
+|-----------------------|--------------------------------------------------------------|
+| `j` `k`               | Next or previous follow, or post when its posts are showing |
+| `J` `K`               | Next or previous follow                                      |
+| `Enter`               | Open the site or post under the cursor                       |
+| `l` `h`               | Show a follow's posts and step into them, or back out        |
+| `o`                   | Open the follow's newest post                                |
+| `e`                   | Edit the follow                                              |
+| `r`                   | Fetch it now                                                 |
+| `Esc`                 | Close its posts or edit form                                 |
+| `,` `.`               | Previous or next tag                                         |
+| `1` to `9`            | The first to ninth tag                                       |
+| `[` `]`               | More or less important tier                                  |
+
+The arrow keys work like `j` `k` `l` `h`, so they only scroll pages without follows. Shortcuts are ignored
+while typing in a form field, apart from `Esc` in a follow's edit form.
+
 ## Importance tiers and polling
 
 | Tier       |    | OPML category    | Checked every |

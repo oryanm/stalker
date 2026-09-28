@@ -17,6 +17,9 @@
     sync(box);
   }
 
+  // shared with keys.js
+  window.stalker = { close: close };
+
   // a row's posts/edit links toggle its box: a second click closes it without a request
   document.addEventListener("htmx:beforeRequest", function (e) {
     var el = e.detail && e.detail.elt;

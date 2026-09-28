@@ -13,6 +13,7 @@
 <script src="{{static "htmx.min.js"}}" defer></script>
 <script src="{{static "htmx-sse.js"}}" defer></script>
 <script src="{{static "app.js"}}" defer></script>
+<script src="{{static "keys.js"}}" defer></script>
 </head>
 <body hx-boost="true" hx-ext="sse" sse-connect="/events">
 <div class="receiver">
@@ -40,6 +41,25 @@
 </div>
 </div>
 <div id="notice" sse-swap="follows-changed" hx-swap="innerHTML"></div>
+<dialog id="keys" class="keys" aria-labelledby="keys-title">
+<h2 id="keys-title">Keyboard shortcuts</h2>
+<dl>
+<div><dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>Next or previous follow, or post in an open one</dd></div>
+<div><dt><kbd>J</kbd> <kbd>K</kbd></dt><dd>Next or previous follow</dd></div>
+<div><dt><kbd>Enter</kbd></dt><dd>Open the site or post under the cursor</dd></div>
+<div><dt><kbd>l</kbd> <kbd>h</kbd></dt><dd>Show a follow’s posts, or go back and hide them</dd></div>
+<div><dt><kbd>o</kbd></dt><dd>Open the follow’s newest post</dd></div>
+<div><dt><kbd>e</kbd></dt><dd>Edit the follow</dd></div>
+<div><dt><kbd>r</kbd></dt><dd>Fetch it now</dd></div>
+<div><dt><kbd>Esc</kbd></dt><dd>Close its posts or edit form</dd></div>
+<div><dt><kbd>,</kbd> <kbd>.</kbd></dt><dd>Previous or next tag</dd></div>
+<div><dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd>The first to ninth tag</dd></div>
+<div><dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>More or less important tier</dd></div>
+<div><dt><kbd>?</kbd></dt><dd>This list</dd></div>
+</dl>
+<p class="hint">The arrow keys work like <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd> <kbd>h</kbd>.</p>
+<button type="button" data-keys>Close</button>
+</dialog>
 </body>
 </html>
 {{end}}
