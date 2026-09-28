@@ -6,6 +6,9 @@
 <meta name="color-scheme" content="{{$theme.ColorScheme}}">
 <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"allowScriptTags":false,"responseHandling":[{"code":"204","swap":false},{"code":"...","swap":true}]}'>
 <title>{{with .Title}}{{.}} · {{end}}stalker</title>
+<link rel="icon" href="{{static "icon/favicon.svg"}}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{{static "icon/apple-touch-icon.png"}}">
+<link rel="manifest" href="{{static "manifest.json"}}">
 <link rel="stylesheet" href="{{static $theme.CSS}}">
 <script src="{{static "htmx.min.js"}}" defer></script>
 <script src="{{static "htmx-sse.js"}}" defer></script>

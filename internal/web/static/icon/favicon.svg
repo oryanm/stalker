@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs>
+<linearGradient id="plate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c3029"/><stop offset="1" stop-color="#1a1d18"/></linearGradient>
+<linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#060704"/><stop offset="1" stop-color="#11150c"/></linearGradient>
+</defs>
+<rect width="64" height="64" rx="14" fill="url(#plate)"/>
+<rect x="7" y="14" width="50" height="36" rx="5" fill="url(#glass)" stroke="#000" stroke-opacity=".5" stroke-width="1.5"/>
+<g fill="#acd476">
+<rect x="12" y="34" width="4" height="10" rx="1"/>
+<rect x="19" y="26" width="4" height="18" rx="1"/>
+<rect x="26" y="37" width="4" height="7" rx="1"/>
+<rect x="40" y="22" width="4" height="22" rx="1"/>
+<rect x="47" y="31" width="4" height="13" rx="1"/>
+</g>
+<rect x="33.5" y="17" width="3" height="30" rx="1.5" fill="#f75e51"/>
+</svg>
