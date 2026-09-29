@@ -283,6 +283,10 @@ main {
   color: var(--on-pink);
 }
 
+.tier.unused:not(.active) a {
+  opacity: 0.4;
+}
+
 .count {
   font-size: 0.8rem;
   font-variant: normal;

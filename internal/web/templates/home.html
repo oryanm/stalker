@@ -23,7 +23,7 @@
 <span class="mount" aria-hidden="true"><span class="knob"></span><span class="legend">importance</span></span>
 <ul>
 {{- range .TierTabs}}
-<li class="tier{{if .Active}} active{{end}}" data-tier="{{.Tier.Importance}}" data-count="{{.Count}}"><a href="{{tierURL $.Tag .Tier.Importance}}" title="{{.Tier.Description}}"{{if .Active}} aria-current="page"{{end}}><span aria-hidden="true">{{.Tier.Emoji}}</span> {{.Tier.Name}}{{if .Count}} <span class="count">{{.Count}}</span>{{end}}</a></li>
+<li class="tier{{if .Active}} active{{end}}{{if not .Count}} unused{{end}}" data-tier="{{.Tier.Importance}}" data-count="{{.Count}}"><a href="{{tierURL $.Tag .Tier.Importance}}" title="{{.Tier.Description}}"{{if .Active}} aria-current="page"{{end}}><span aria-hidden="true">{{.Tier.Emoji}}</span> {{.Tier.Name}}{{if .Count}} <span class="count">{{.Count}}</span>{{end}}</a></li>
 {{- end}}
 </ul>
 </nav>

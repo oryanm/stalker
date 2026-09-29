@@ -906,6 +906,15 @@ button:disabled {
   opacity: 1;
 }
 
+/* a position with nothing tuned to it */
+.tier.unused:not(.active) a {
+  opacity: 0.4;
+}
+
+.tier.unused:not(.active) a:hover {
+  opacity: 0.7;
+}
+
 .count {
   margin-left: auto;
   padding-left: 0.75rem;

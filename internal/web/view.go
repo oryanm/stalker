@@ -402,18 +402,15 @@ type tierTab struct {
 	Active bool
 }
 
-// buildTierTabs shows tiers with follows, plus the current one even when empty.
+// buildTierTabs shows every tier, so the knob always has all its positions; unused ones are grayed out.
 func buildTierTabs(inTag []model.Follow, current model.Importance) []tierTab {
 	counts := map[model.Importance]int{}
 	for _, f := range inTag {
 		counts[tierOf(f)]++
 	}
-	var tabs []tierTab
-	for _, t := range model.Tiers {
-		n := counts[t.Importance]
-		if n > 0 || t.Importance == current {
-			tabs = append(tabs, tierTab{Tier: t, Count: n, Active: t.Importance == current})
-		}
+	tabs := make([]tierTab, len(model.Tiers))
+	for i, t := range model.Tiers {
+		tabs[i] = tierTab{Tier: t, Count: counts[t.Importance], Active: t.Importance == current}
 	}
 	return tabs
 }

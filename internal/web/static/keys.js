@@ -200,7 +200,8 @@
         return true;
       case "[":
       case "]":
-        return latch(step(".tiers .tier", e.key === "]" ? 1 : -1, false));
+        // skipping the unused tiers, unless the dial is on one
+        return latch(step(".tiers .tier:not(.unused), .tiers .tier.active", e.key === "]" ? 1 : -1, false));
       case ",":
       case ".":
         return latch(step(".tags .tag", e.key === "." ? 1 : -1, true));

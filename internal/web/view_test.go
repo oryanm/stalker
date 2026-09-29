@@ -389,10 +389,9 @@ func TestTierTabs(t *testing.T) {
 		current model.Importance
 		want    []tab
 	}{
-		{model.Occasional, []tab{{model.Occasional, 2, true}, {model.Rarely, 2, false}}},
-		{model.Realtime, []tab{{model.Realtime, 0, true}, {model.Occasional, 2, false}, {model.Rarely, 2, false}}},
-		// an empty tier that was asked for is still shown, as the active one
-		{model.Sometime, []tab{{model.Occasional, 2, false}, {model.Sometime, 0, true}, {model.Rarely, 2, false}}},
+		// every tier is shown, the empty ones too
+		{model.Occasional, []tab{{model.Realtime, 0, false}, {model.Frequent, 0, false}, {model.Occasional, 2, true}, {model.Sometime, 0, false}, {model.Rarely, 2, false}}},
+		{model.Sometime, []tab{{model.Realtime, 0, false}, {model.Frequent, 0, false}, {model.Occasional, 2, false}, {model.Sometime, 0, true}, {model.Rarely, 2, false}}},
 	}
 	for _, tt := range tests {
 		if got := flatten(buildTierTabs(inTag, tt.current)); !slices.Equal(got, tt.want) {

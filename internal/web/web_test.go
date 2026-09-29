@@ -496,7 +496,7 @@ func TestHomeGroupsFraidycatExport(t *testing.T) {
 		{"videos rarely", "/?tier=365&tag=" + url.QueryEscape("📹"), "📹",
 			[]tier{{1, 2}, {7, 2}, {30, 1}, {365, 2}}, model.Rarely, 2},
 		{"dev", "/?tag=" + url.QueryEscape(devTag), devTag, []tier{{7, 4}}, model.Occasional, 4},
-		{"empty realtime", "/?tier=0&tag=" + url.QueryEscape(devTag), devTag, []tier{{0, 0}, {7, 4}}, model.Realtime, 0},
+		{"empty realtime", "/?tier=0&tag=" + url.QueryEscape(devTag), devTag, []tier{{7, 4}}, model.Realtime, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -521,15 +521,25 @@ func TestHomeGroupsFraidycatExport(t *testing.T) {
 			}
 			wantContains(t, body, `active" data-tag="`+tt.activeTag+`"`)
 
-			if got := strings.Count(body, `<li class="tier`); got != len(tt.tiers) {
-				t.Errorf("%d tier tabs, want %d", got, len(tt.tiers))
+			// every tier has a tab; the ones not listed are unused
+			if got := strings.Count(body, `<li class="tier`); got != len(model.Tiers) {
+				t.Errorf("%d tier tabs, want %d", got, len(model.Tiers))
 			}
-			for _, tr := range tt.tiers {
-				active := ""
-				if tr.imp == tt.activeTier {
-					active = " active"
+			for _, mt := range model.Tiers {
+				count := 0
+				for _, tr := range tt.tiers {
+					if tr.imp == mt.Importance {
+						count = tr.count
+					}
 				}
-				wantContains(t, body, `<li class="tier`+active+`" data-tier="`+strconv.Itoa(int(tr.imp))+`" data-count="`+strconv.Itoa(tr.count)+`">`)
+				class := "tier"
+				if mt.Importance == tt.activeTier {
+					class += " active"
+				}
+				if count == 0 {
+					class += " unused"
+				}
+				wantContains(t, body, `<li class="`+class+`" data-tier="`+strconv.Itoa(int(mt.Importance))+`" data-count="`+strconv.Itoa(count)+`">`)
 			}
 			if got := len(rowIDs(body)); got != tt.rows {
 				t.Errorf("%d rows, want %d", got, tt.rows)
