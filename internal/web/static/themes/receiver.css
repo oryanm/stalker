@@ -120,6 +120,9 @@
   --display: oklch(from var(--function-decl) calc(l + 0.12) calc(c + 0.02) h);
   --readout: oklch(from var(--fg) calc(l + 0.12) calc(c + 0.02) h);
   --trace: var(--todo);
+  /* a trace cut short by the follow's short history, amber like an old scope's phosphor */
+  --trace-short: oklch(from var(--trace) l c 62);
+  --print-short: oklch(from var(--print) l c 62);
   --pointer: oklch(from var(--error) calc(l + 0.13) calc(c + 0.03) h);
 
   /* lamps: fresh, recent, old follow the palette's green, number and string */
@@ -1216,6 +1219,38 @@ button:disabled {
 
 .spark-old polygon {
   fill: oklch(from var(--print) l c h / 0.1);
+}
+
+.spark-recent.spark-short {
+  --short: var(--trace-short);
+  filter: drop-shadow(0 0 2px oklch(from var(--short) l c h / 0.8));
+}
+
+.spark-old.spark-short {
+  --short: var(--print-short);
+}
+
+.spark-short polyline {
+  stroke: var(--short);
+}
+
+.spark-recent.spark-short polygon {
+  fill: oklch(from var(--short) l c h / 0.16);
+}
+
+.spark-old.spark-short polygon {
+  fill: oklch(from var(--short) l c h / 0.1);
+}
+
+.scope:hover .spark-short {
+  animation: short-glow 3s ease-in-out infinite;
+}
+
+/* the trace already glows, so the pulse adds a wide halo around it */
+@keyframes short-glow {
+  50% {
+    filter: drop-shadow(0 0 3px oklch(from var(--short) l c h)) drop-shadow(0 0 8px oklch(from var(--short) l c h / 0.7));
+  }
 }
 
 .error {

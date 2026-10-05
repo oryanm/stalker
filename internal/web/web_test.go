@@ -611,7 +611,7 @@ func TestHomeRows(t *testing.T) {
 		`<div class="head age-h">`,
 		`<a class="title" href="https://fresh.example/" target="_blank" rel="noopener noreferrer" dir="auto">Fresh Blog</a>`,
 		`<span class="age" title="Latest post">2h</span>`,
-		`<svg class="spark spark-recent"`,
+		`<svg class="spark spark-recent spark-short"`, // its oldest post is 50 days old
 		`<li class="post age-h"><a href="https://fresh.example/1" target="_blank" rel="noopener noreferrer" dir="auto">Newest post</a> <span class="age">2h</span></li>`,
 		`<li class="post age-d"><a href="https://fresh.example/2"`,
 		`<li class="post age-M"><a href="https://fresh.example/3"`,
@@ -621,7 +621,7 @@ func TestHomeRows(t *testing.T) {
 		`hx-get="/follows/1/edit" hx-target="#posts-1"`,
 		`<div class="posts" id="posts-1"></div>`,
 		`<li id="follow-2" class="follow age-M">`,
-		`<svg class="spark spark-old"`,
+		`<svg class="spark spark-old spark-short"`,
 		`<li id="follow-3" class="follow">`,
 		`<span class="error" tabindex="0" title="Last fetch failed: HTTP 404 &lt;b&gt;&#34;gone&#34;&lt;/b&gt;">`,
 		`<span class="fetching"`,

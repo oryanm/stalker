@@ -29,6 +29,10 @@
   --spark-recent-fill: #ffc0cb;
   --spark-old: #9999bb;
   --spark-old-fill: #dde2ea;
+  --spark-short: #e08600;
+  --spark-short-fill: #ffe3b3;
+  --spark-old-short: #b89a70;
+  --spark-old-short-fill: #efe6d8;
   --error: #c0392b;
   --error-bg: #fde8e4;
   --ok-bg: #e2f3e5;
@@ -69,6 +73,10 @@
     --spark-recent-fill: #4a1636;
     --spark-old: #8a8aa8;
     --spark-old-fill: #262638;
+    --spark-short: #ffab3d;
+    --spark-short-fill: #4a3010;
+    --spark-old-short: #a8906b;
+    --spark-old-short-fill: #33291c;
     --error: #ff8a7a;
     --error-bg: #3a1a1a;
     --ok-bg: #173522;
@@ -447,6 +455,37 @@ main {
 
 .spark-old polygon {
   fill: var(--spark-old-fill);
+}
+
+/* a trace cut short by the follow's short history */
+.spark-recent.spark-short {
+  --short: var(--spark-short);
+}
+
+.spark-old.spark-short {
+  --short: var(--spark-old-short);
+}
+
+.spark-short polyline {
+  stroke: var(--short);
+}
+
+.spark-recent.spark-short polygon {
+  fill: var(--spark-short-fill);
+}
+
+.spark-old.spark-short polygon {
+  fill: var(--spark-old-short-fill);
+}
+
+.scope:hover .spark-short {
+  animation: short-glow 3s ease-in-out infinite;
+}
+
+@keyframes short-glow {
+  50% {
+    filter: drop-shadow(0 0 3px var(--short));
+  }
 }
 
 .error {
@@ -991,7 +1030,8 @@ kbd {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fetching {
+  .fetching,
+  .scope:hover .spark-short {
     animation: none;
   }
 }

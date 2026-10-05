@@ -145,9 +145,12 @@ func sparkline(a store.Activity, now time.Time) template.HTML {
 	if counts == nil {
 		return ""
 	}
-	class := "spark-old"
+	class, full := "spark-old", activityWindow
 	if recent {
-		class = "spark-recent"
+		class, full = "spark-recent", recentWindow
+	}
+	if span < full {
+		class += " spark-short" // the history starts on the left edge
 	}
 	days := int(span / day)
 	peak := slices.Max(counts)

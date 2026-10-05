@@ -226,7 +226,8 @@ func TestSparkline(t *testing.T) {
 	}
 
 	short := string(sparkline(store.Activity{Times: []time.Time{now.Add(-time.Hour), now.Add(-11 * day)}, Oldest: now.Add(-11 * day)}, now))
-	if !strings.Contains(short, `aria-label="posts over the last 12 days"`) || !strings.Contains(short, "2 posts in the last 12 days") {
+	if !strings.Contains(short, `<svg class="spark spark-recent spark-short" `) ||
+		!strings.Contains(short, `aria-label="posts over the last 12 days"`) || !strings.Contains(short, "2 posts in the last 12 days") {
 		t.Errorf("short sparkline = %s", short)
 	}
 }
