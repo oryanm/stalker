@@ -77,7 +77,7 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	activity := map[int64][]time.Time{}
+	activity := map[int64]store.Activity{}
 	if len(ids) > 0 {
 		if activity, err = s.st.Activity(ctx, now.Add(-activityWindow), ids); err != nil {
 			return err

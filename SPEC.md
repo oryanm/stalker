@@ -57,8 +57,10 @@ genuinely wrong, make the smallest change, update every caller, and report it.
   newest post among that tag's Realtime follows.
 - `timeAgo(t, now)`: under 1 minute `1m`, 1-45 minutes `Nm`, 46-90 minutes `1h`, up to 24h `Nh`, up to 48h `1d`, up to 72h `2d`,
   up to a year `Jan 2`, older `Jan 2, 2006`. Zero time renders nothing.
-- Sparkline: a 120x20 inline SVG polyline of posts per day, newest on the right. Use the last 60 days (pink stroke) if there was any
-  activity in them, else the last 180 days bucketed per 3 days (grey stroke). Render nothing when there is no activity.
+- Sparkline: a 120x20 inline SVG polyline of posts in 60 buckets, newest on the right. Use the last 60 days (pink stroke) if there was
+  any activity in them, else the last 180 days (grey stroke). Either starts no earlier than the day of the oldest stored post, and
+  spans at least 7 days: a feed lists only its latest posts (YouTube's 15), so the days before them are unknown, not quiet. Render
+  nothing when there is no activity.
 - Polling: see `poller.Interval` / `poller.NextFetch`. An optional global minimum interval (Settings, stored as
   `min_interval`) raises every faster tier to it; see `poller.EffectiveInterval`. Conditional GETs (ETag / Last-Modified). Per-host throttling in
   `feed.Client` keeps YouTube (84 feeds) from rate limiting us.

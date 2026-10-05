@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	"github.com/oryanm/stalker/internal/model"
+	"github.com/oryanm/stalker/internal/store"
 )
 
 // Sort settings, stored under the settingSort key.
@@ -39,8 +40,11 @@ const (
 	day = 24 * time.Hour
 	// activityWindow is how far back the sparkline looks.
 	activityWindow = 180 * day
-	recentDays     = 60
-	sparkPoints    = 60
+	// recentWindow is the sparkline's span when there were posts in it.
+	recentWindow = 60 * day
+	// minSparkSpan is the shortest span, however recent the oldest post.
+	minSparkSpan = 7 * day
+	sparkPoints  = 60
 )
 
 // minutesBetween rounds the distance between two instants to whole minutes the
@@ -93,41 +97,38 @@ func ageClass(t, now time.Time) string {
 	}
 }
 
-// sparkBuckets counts posts per day over the last 60 days (recent) or, when
-// those are empty, per 3 days over the last 180. Index 0 is the oldest bucket.
-// It returns nil when there was no activity at all.
-func sparkBuckets(times []time.Time, now time.Time) (counts []int, recent bool) {
-	daysAgo := func(t time.Time) int {
-		d := now.Sub(t)
-		if d < 0 {
-			return 0
-		}
-		return int(d / day)
+// sparkBuckets counts posts in sparkPoints buckets spanning the last 60 days
+// (recent) or, when those are empty, the last 180. The span starts no earlier
+// than the day of the oldest post stored, and is at least 7 days: a feed lists
+// only its latest posts (YouTube's only 15), so a busy follow's history can
+// begin days ago, and the days before it are unknown, not quiet. Index 0 is
+// the oldest bucket. It returns nil when there was no activity at all.
+func sparkBuckets(a store.Activity, now time.Time) (counts []int, span time.Duration, recent bool) {
+	age := func(t time.Time) time.Duration { return max(now.Sub(t), 0) }
+	recent = slices.ContainsFunc(a.Times, func(t time.Time) bool { return age(t) < recentWindow })
+	span = activityWindow
+	if recent {
+		span = recentWindow
 	}
-	for _, t := range times {
-		if daysAgo(t) < recentDays {
-			recent = true
-			break
-		}
+	if !a.Oldest.IsZero() {
+		known := (age(a.Oldest)/day + 1) * day // whole days, counting the oldest post's
+		span = min(span, max(known, minSparkSpan))
 	}
+	bucket := span / sparkPoints
 	counts = make([]int, sparkPoints)
 	found := false
-	for _, t := range times {
-		d := daysAgo(t)
-		bucket := d
-		if !recent {
-			bucket = d / 3
-		}
-		if bucket >= sparkPoints {
+	for _, t := range a.Times {
+		i := int(age(t) / bucket)
+		if i >= sparkPoints {
 			continue
 		}
-		counts[sparkPoints-1-bucket]++
+		counts[sparkPoints-1-i]++
 		found = true
 	}
 	if !found {
-		return nil, false
+		return nil, 0, false
 	}
-	return counts, recent
+	return counts, span, recent
 }
 
 const (
@@ -139,15 +140,16 @@ const (
 
 // sparkline renders the activity graph as inline SVG. The markup is built from
 // numbers and constants only, so it is safe to mark as template.HTML.
-func sparkline(times []time.Time, now time.Time) template.HTML {
-	counts, recent := sparkBuckets(times, now)
+func sparkline(a store.Activity, now time.Time) template.HTML {
+	counts, span, recent := sparkBuckets(a, now)
 	if counts == nil {
 		return ""
 	}
-	class, label, span := "spark-old", "posts every 3 days over the last 6 months", 180
+	class := "spark-old"
 	if recent {
-		class, label, span = "spark-recent", "posts per day over the last 2 months", recentDays
+		class = "spark-recent"
 	}
+	days := int(span / day)
 	peak := slices.Max(counts)
 	total := 0
 	for _, c := range counts {
@@ -169,13 +171,13 @@ func sparkline(times []time.Time, now time.Time) template.HTML {
 	}
 
 	var b strings.Builder
-	fmt.Fprintf(&b, `<svg class="spark %s" width="%d" height="%d" viewBox="0 0 %d %d" role="img" aria-label="%s">`,
-		class, sparkWidth, sparkHeight, sparkWidth, sparkHeight, label)
+	fmt.Fprintf(&b, `<svg class="spark %s" width="%d" height="%d" viewBox="0 0 %d %d" role="img" aria-label="posts over the last %d days">`,
+		class, sparkWidth, sparkHeight, sparkWidth, sparkHeight, days)
 	noun := "posts"
 	if total == 1 {
 		noun = "post"
 	}
-	fmt.Fprintf(&b, `<title>%d %s in the last %d days</title>`, total, noun, span)
+	fmt.Fprintf(&b, `<title>%d %s in the last %d days</title>`, total, noun, days)
 	fmt.Fprintf(&b, `<polygon points="%s,%s %s %s,%s"/>`,
 		num(sparkPad), num(bottom), pts.String(), num(sparkWidth-sparkPad), num(bottom))
 	fmt.Fprintf(&b, `<polyline points="%s"/>`, pts.String())
@@ -217,7 +219,7 @@ func parseTags(s string) []string {
 type row struct {
 	Follow   model.Follow
 	Posts    []model.Post // newest first
-	Activity []time.Time
+	Activity store.Activity
 	Fetching bool
 	Now      time.Time
 }
@@ -512,7 +514,7 @@ func dialX(age time.Duration) float64 {
 func dial(rows []row) template.HTML {
 	peak := 1
 	for _, r := range rows {
-		peak = max(peak, len(r.Activity))
+		peak = max(peak, len(r.Activity.Times))
 	}
 	var b strings.Builder
 	b.WriteString(`<svg class="stations" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">`)
@@ -522,7 +524,7 @@ func dial(rows []row) template.HTML {
 			continue
 		}
 		x := num(dialX(r.Now.Sub(last)))
-		top := 100 - (30 + 62*math.Sqrt(float64(len(r.Activity))/float64(peak)))
+		top := 100 - (30 + 62*math.Sqrt(float64(len(r.Activity.Times))/float64(peak)))
 		fmt.Fprintf(&b, `<line class="station %s" data-follow="%d" x1="%s" x2="%s" y1="100" y2="%s"/>`,
 			ageClass(last, r.Now), r.Follow.ID, x, x, num(top))
 	}

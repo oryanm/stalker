@@ -380,12 +380,22 @@ func (s *Store) LatestPosts(ctx context.Context, perFollow int) (map[int64][]mod
 	return out, nil
 }
 
-// Activity returns the PublishedAt of every post since the given time, keyed by
-// follow id. followIDs limits the result; nil means all follows.
-// Times are newest first; follows without activity are absent; the map is never nil.
-func (s *Store) Activity(ctx context.Context, since time.Time, followIDs []int64) (map[int64][]time.Time, error) {
-	out := make(map[int64][]time.Time)
-	query := `SELECT follow_id, published_at FROM posts WHERE published_at >= ?`
+// Activity is a follow's posting history, as its sparkline draws it.
+type Activity struct {
+	Times []time.Time // PublishedAt of every post since the time asked for, newest first
+	// Oldest is the PublishedAt of the oldest post stored, however old. A feed
+	// lists only its latest posts, so nothing before it is known.
+	Oldest time.Time
+}
+
+// Activity returns the activity of every follow with posts since the given
+// time, keyed by follow id. followIDs limits the result; nil means all follows.
+// Follows without activity are absent; the map is never nil.
+func (s *Store) Activity(ctx context.Context, since time.Time, followIDs []int64) (map[int64]Activity, error) {
+	out := make(map[int64]Activity)
+	query := `
+		SELECT follow_id, published_at, (SELECT min(published_at) FROM posts o WHERE o.follow_id = p.follow_id)
+		FROM posts p WHERE published_at >= ?`
 	args := []any{toMS(since)}
 	if followIDs != nil {
 		if len(followIDs) == 0 {
@@ -408,11 +418,14 @@ func (s *Store) Activity(ctx context.Context, since time.Time, followIDs []int64
 	defer rows.Close()
 	for rows.Next() {
 		var id int64
-		var at time.Time
-		if err := rows.Scan(&id, msTime{&at}); err != nil {
+		var at, oldest time.Time
+		if err := rows.Scan(&id, msTime{&at}, msTime{&oldest}); err != nil {
 			return nil, fmt.Errorf("store: activity: %w", err)
 		}
-		out[id] = append(out[id], at)
+		a := out[id]
+		a.Times = append(a.Times, at)
+		a.Oldest = oldest
+		out[id] = a
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("store: activity: %w", err)

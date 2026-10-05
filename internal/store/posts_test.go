@@ -809,44 +809,44 @@ func TestActivity(t *testing.T) {
 		name      string
 		since     time.Time
 		followIDs []int64
-		want      map[int64][]time.Time
+		want      map[int64]Activity
 	}{
 		{
-			name:  "all follows since a date, newest first",
+			name:  "all follows since a date, newest first, with their oldest post however old",
 			since: t0.Add(-30 * day),
-			want: map[int64][]time.Time{
-				a.ID: {t0.Add(-day), t0.Add(-10 * day), t0.Add(-10 * day)},
-				b.ID: {t0.Add(-2 * day)},
+			want: map[int64]Activity{
+				a.ID: {Times: []time.Time{t0.Add(-day), t0.Add(-10 * day), t0.Add(-10 * day)}, Oldest: t0.Add(-100 * day)},
+				b.ID: {Times: []time.Time{t0.Add(-2 * day)}, Oldest: t0.Add(-2 * day)},
 			},
 		},
 		{
 			name:  "since is inclusive",
 			since: t0.Add(-day),
-			want:  map[int64][]time.Time{a.ID: {t0.Add(-day)}},
+			want:  map[int64]Activity{a.ID: {Times: []time.Time{t0.Add(-day)}, Oldest: t0.Add(-100 * day)}},
 		},
 		{
 			name: "zero since means everything",
-			want: map[int64][]time.Time{
-				a.ID: {t0.Add(-day), t0.Add(-10 * day), t0.Add(-10 * day), t0.Add(-100 * day)},
-				b.ID: {t0.Add(-2 * day)},
+			want: map[int64]Activity{
+				a.ID: {Times: []time.Time{t0.Add(-day), t0.Add(-10 * day), t0.Add(-10 * day), t0.Add(-100 * day)}, Oldest: t0.Add(-100 * day)},
+				b.ID: {Times: []time.Time{t0.Add(-2 * day)}, Oldest: t0.Add(-2 * day)},
 			},
 		},
 		{
 			name:      "limited to some follows",
 			since:     t0.Add(-30 * day),
 			followIDs: []int64{b.ID, c.ID, 999},
-			want:      map[int64][]time.Time{b.ID: {t0.Add(-2 * day)}},
+			want:      map[int64]Activity{b.ID: {Times: []time.Time{t0.Add(-2 * day)}, Oldest: t0.Add(-2 * day)}},
 		},
 		{
 			name:      "empty follow list",
 			since:     t0.Add(-30 * day),
 			followIDs: []int64{},
-			want:      map[int64][]time.Time{},
+			want:      map[int64]Activity{},
 		},
 		{
 			name:  "nothing recent",
 			since: t0.Add(time.Hour),
-			want:  map[int64][]time.Time{},
+			want:  map[int64]Activity{},
 		},
 	}
 	for _, tt := range tests {

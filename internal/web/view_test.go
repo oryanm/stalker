@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/oryanm/stalker/internal/model"
+	"github.com/oryanm/stalker/internal/store"
 )
 
 var now = time.Date(2026, 9, 24, 12, 0, 0, 0, time.UTC)
@@ -93,7 +94,9 @@ func TestSparkBuckets(t *testing.T) {
 	tests := []struct {
 		name       string
 		times      []time.Time
+		oldest     time.Time // zero leaves the span whole
 		wantRecent bool
+		wantSpan   time.Duration
 		want       map[int]int // index -> count; every other bucket is 0
 	}{
 		{name: "no activity", times: nil},
@@ -102,35 +105,71 @@ func TestSparkBuckets(t *testing.T) {
 			name:       "today is the rightmost point",
 			times:      []time.Time{ago(time.Hour), ago(23 * time.Hour)},
 			wantRecent: true,
+			wantSpan:   60 * day,
 			want:       map[int]int{59: 2},
 		},
 		{
 			name:       "per day over 60 days",
 			times:      []time.Time{ago(24 * time.Hour), ago(59*day + 23*time.Hour), ago(2*day + time.Hour)},
 			wantRecent: true,
+			wantSpan:   60 * day,
 			want:       map[int]int{58: 1, 57: 1, 0: 1},
 		},
 		{
 			name:       "recent activity ignores older posts",
 			times:      []time.Time{ago(day + time.Hour), ago(100 * day)},
 			wantRecent: true,
+			wantSpan:   60 * day,
 			want:       map[int]int{58: 1},
 		},
 		{
-			name:  "no recent activity falls back to 3-day buckets",
-			times: []time.Time{ago(60 * day), ago(61 * day), ago(62*day + time.Hour), ago(63 * day), ago(179 * day)},
-			want:  map[int]int{39: 3, 38: 1, 0: 1},
+			name:     "no recent activity falls back to 3-day buckets",
+			times:    []time.Time{ago(60 * day), ago(61 * day), ago(62*day + time.Hour), ago(63 * day), ago(179 * day)},
+			wantSpan: 180 * day,
+			want:     map[int]int{39: 3, 38: 1, 0: 1},
 		},
 		{
 			name:       "future posts count as today",
 			times:      []time.Time{now.Add(time.Hour)},
 			wantRecent: true,
+			wantSpan:   60 * day,
 			want:       map[int]int{59: 1},
+		},
+		{
+			name:       "a short history spans the days back to its oldest post",
+			times:      []time.Time{ago(time.Hour), ago(5 * day), ago(11*day + time.Hour)},
+			oldest:     ago(11*day + time.Hour),
+			wantRecent: true,
+			wantSpan:   12 * day, // 4.8 hours a bucket
+			want:       map[int]int{59: 1, 34: 1, 4: 1},
+		},
+		{
+			name:       "older posts stored keep the whole span",
+			times:      []time.Time{ago(day + time.Hour)},
+			oldest:     ago(300 * day),
+			wantRecent: true,
+			wantSpan:   60 * day,
+			want:       map[int]int{58: 1},
+		},
+		{
+			name:       "the span is at least 7 days",
+			times:      []time.Time{ago(time.Hour), ago(2 * day)},
+			oldest:     ago(2 * day),
+			wantRecent: true,
+			wantSpan:   7 * day, // 2.8 hours a bucket
+			want:       map[int]int{59: 1, 42: 1},
+		},
+		{
+			name:     "a short quiet history spans the days back to its oldest post too",
+			times:    []time.Time{ago(70 * day), ago(99*day + time.Hour)},
+			oldest:   ago(99*day + time.Hour),
+			wantSpan: 100 * day, // 40 hours a bucket
+			want:     map[int]int{17: 1, 0: 1},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			counts, recent := sparkBuckets(tt.times, now)
+			counts, span, recent := sparkBuckets(store.Activity{Times: tt.times, Oldest: tt.oldest}, now)
 			if tt.want == nil {
 				if counts != nil {
 					t.Fatalf("got %v, want nil", counts)
@@ -139,6 +178,9 @@ func TestSparkBuckets(t *testing.T) {
 			}
 			if recent != tt.wantRecent {
 				t.Errorf("recent = %v, want %v", recent, tt.wantRecent)
+			}
+			if span != tt.wantSpan {
+				t.Errorf("span = %v, want %v", span, tt.wantSpan)
 			}
 			if len(counts) != 60 {
 				t.Fatalf("got %d buckets, want 60", len(counts))
@@ -153,13 +195,13 @@ func TestSparkBuckets(t *testing.T) {
 }
 
 func TestSparkline(t *testing.T) {
-	if got := sparkline(nil, now); got != "" {
+	if got := sparkline(store.Activity{}, now); got != "" {
 		t.Errorf("no activity rendered %q", got)
 	}
 
-	recent := string(sparkline([]time.Time{now.Add(-time.Hour), now.Add(-time.Hour), now.Add(-10 * day)}, now))
+	recent := string(sparkline(store.Activity{Times: []time.Time{now.Add(-time.Hour), now.Add(-time.Hour), now.Add(-10 * day)}}, now))
 	for _, want := range []string{
-		`<svg class="spark spark-recent" width="120" height="20" viewBox="0 0 120 20"`,
+		`<svg class="spark spark-recent" width="120" height="20" viewBox="0 0 120 20" role="img" aria-label="posts over the last 60 days">`,
 		`<title>3 posts in the last 60 days</title>`,
 		`<polyline points="1,19 `,
 		` 119,2"/>`, // the busiest day reaches the top, on the right
@@ -178,9 +220,14 @@ func TestSparkline(t *testing.T) {
 		t.Errorf("points contain unexpected characters: %q", points[1])
 	}
 
-	old := string(sparkline([]time.Time{now.Add(-100 * day)}, now))
+	old := string(sparkline(store.Activity{Times: []time.Time{now.Add(-100 * day)}}, now))
 	if !strings.Contains(old, `class="spark spark-old"`) || !strings.Contains(old, "1 post in the last 180 days") {
 		t.Errorf("old sparkline = %s", old)
+	}
+
+	short := string(sparkline(store.Activity{Times: []time.Time{now.Add(-time.Hour), now.Add(-11 * day)}, Oldest: now.Add(-11 * day)}, now))
+	if !strings.Contains(short, `aria-label="posts over the last 12 days"`) || !strings.Contains(short, "2 posts in the last 12 days") {
+		t.Errorf("short sparkline = %s", short)
 	}
 }
 
@@ -486,7 +533,7 @@ func TestDial(t *testing.T) {
 	}
 
 	rows := []row{
-		{Follow: model.Follow{ID: 7, LastPostAt: now}, Activity: []time.Time{now, now}, Now: now},
+		{Follow: model.Follow{ID: 7, LastPostAt: now}, Activity: store.Activity{Times: []time.Time{now, now}}, Now: now},
 		{Follow: model.Follow{ID: 8, LastPostAt: now.Add(-60 * day)}, Now: now},
 		{Follow: model.Follow{ID: 9}, Now: now}, // no posts: no station
 	}
