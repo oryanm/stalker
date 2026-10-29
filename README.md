@@ -192,6 +192,7 @@ while typing in a form field, apart from `Esc` in a follow's edit form.
 - Each follow keeps its newest 50 posts plus anything from the last 180 days, up to 500 posts, and whatever its feed still
   lists. Posts the feed drops although they are newer than its oldest entry (deleted or re-uploaded videos) are removed, as
   Fraidycat does. At most 200 entries are read from one fetch.
+- YouTube Shorts are skipped, so a channel's row shows only its videos and livestreams.
 
 ## Backups
 

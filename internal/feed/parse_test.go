@@ -371,6 +371,32 @@ func TestParseKeepsNewestPosts(t *testing.T) {
 	}
 }
 
+func TestParseSkipsYouTubeShorts(t *testing.T) {
+	tests := []struct {
+		link string
+		kept bool
+	}{
+		{"https://www.youtube.com/shorts/xYz98765432", false},
+		{"https://m.youtube.com/shorts/xYz98765432", false},
+		{"https://youtube.com/shorts/xYz98765432", false},
+		{"https://www.youtube.com/watch?v=xYz98765432", true},
+		{"https://example.com/shorts/xYz98765432", true},
+		{"https://notyoutube.com/shorts/xYz98765432", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.link, func(t *testing.T) {
+			body := `<rss version="2.0"><channel><title>t</title><item><link>` + tt.link + `</link></item></channel></rss>`
+			got, err := Parse([]byte(body), "")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if kept := len(got.Posts) == 1; kept != tt.kept {
+				t.Errorf("kept = %v, want %v", kept, tt.kept)
+			}
+		})
+	}
+}
+
 func TestParseTooManyEntries(t *testing.T) {
 	repeat := func(head, entry, tail string, n int) []byte {
 		return []byte(head + strings.Repeat(entry, n) + tail)

@@ -64,6 +64,8 @@ genuinely wrong, make the smallest change, update every caller, and report it.
 - Polling: see `poller.Interval` / `poller.NextFetch`. An optional global minimum interval (Settings, stored as
   `min_interval`) raises every faster tier to it; see `poller.EffectiveInterval`. Conditional GETs (ETag / Last-Modified). Per-host throttling in
   `feed.Client` keeps YouTube (84 feeds) from rate limiting us.
+- YouTube Shorts are dropped in `feed.Parse`: channel feeds link them as `/shorts/ID`, while videos and
+  livestreams link `/watch?v=ID`.
 - OPML: Fraidycat exports `category="importance/7,👨‍💻"`, `created="Wed Jun 24 2026 10:28:09 GMT-0400 (Eastern Daylight Time)"`,
   `text`, optional `title`, `xmlUrl`, `htmlUrl`. Export writes the same shape so the file can go back into Fraidycat.
 

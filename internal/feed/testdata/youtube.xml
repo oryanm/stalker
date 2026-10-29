@@ -11,6 +11,25 @@
  </author>
  <published>2014-03-10T19:03:42+00:00</published>
  <entry>
+  <id>yt:video:xYz98765432</id>
+  <yt:videoId>xYz98765432</yt:videoId>
+  <yt:channelId>UCsXVk37bltHxD1rDPwtNM8Q</yt:channelId>
+  <title>A Short</title>
+  <link rel="alternate" href="https://www.youtube.com/shorts/xYz98765432"/>
+  <author>
+   <name>Some Channel</name>
+   <uri>https://www.youtube.com/channel/UCsXVk37bltHxD1rDPwtNM8Q</uri>
+  </author>
+  <published>2026-09-25T13:00:39+00:00</published>
+  <updated>2026-09-25T17:48:40+00:00</updated>
+  <media:group>
+   <media:title>A Short</media:title>
+   <media:content url="https://www.youtube.com/v/xYz98765432?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/xYz98765432/hqdefault.jpg" width="480" height="360"/>
+   <media:description>Vertical and under a minute.</media:description>
+  </media:group>
+ </entry>
+ <entry>
   <id>yt:video:dQw4w9WgXcQ</id>
   <yt:videoId>dQw4w9WgXcQ</yt:videoId>
   <yt:channelId>UCsXVk37bltHxD1rDPwtNM8Q</yt:channelId>

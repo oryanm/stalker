@@ -15,6 +15,7 @@ import (
 	"github.com/mmcdole/gofeed"
 	ext "github.com/mmcdole/gofeed/extensions"
 
+	"github.com/oryanm/stalker/internal/feedurl"
 	"github.com/oryanm/stalker/internal/model"
 )
 
@@ -46,8 +47,9 @@ var utf8BOM = []byte{0xEF, 0xBB, 0xBF}
 // back to text from the description, then "Untitled"), absolute URLs and
 // PublishedAt/UpdatedAt (zero when absent; PublishedAt falls back to UpdatedAt).
 //
-// Only the newest 200 posts are returned, undated ones counting as oldest.
-// Documents with more than 10000 entries fail with ErrTooManyEntries.
+// YouTube Shorts are dropped. Only the newest 200 posts are returned, undated
+// ones counting as oldest. Documents with more than 10000 entries fail with
+// ErrTooManyEntries.
 func Parse(body []byte, baseURL string) (res *Result, err error) {
 	// a parser bug triggered by a hostile document must not take the poller down
 	defer func() {
@@ -102,6 +104,9 @@ func Parse(body []byte, baseURL string) (res *Result, err error) {
 			continue
 		}
 		p := post(it, itemBase)
+		if isYouTubeShort(p.URL) {
+			continue
+		}
 		if p.Author == "" {
 			p.Author = feedAuthor
 		}
@@ -217,6 +222,13 @@ func post(it *gofeed.Item, base *url.URL) model.Post {
 		p.GUID = hashGUID(parts...)
 	}
 	return p
+}
+
+// isYouTubeShort reports whether a post URL is a Short, which YouTube's channel
+// feeds link as /shorts/ID (videos and livestreams link /watch?v=ID).
+func isYouTubeShort(postURL string) bool {
+	u, err := url.Parse(postURL)
+	return err == nil && feedurl.IsYouTubeHost(u.Hostname()) && strings.HasPrefix(u.Path, "/shorts/")
 }
 
 func itemURL(it *gofeed.Item, base *url.URL) string {
